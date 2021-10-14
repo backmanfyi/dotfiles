@@ -1,0 +1,54 @@
+env:
+    TERM: xterm-256color
+
+window:
+  padding: 
+    x: 7
+    y: 7
+  decorations: buttonless
+
+scrolling:
+  history: 10000
+
+selection:
+  save_to_clipboard: true
+
+font:
+  # The normal (roman) font face to use.
+  # Style can be specified to pick a specific face.
+  normal:
+    family: SauceCodePro Nerd Font Mono
+    style: Regular
+    # family: "Fira Code"
+    # family: "Source Code Pro"
+    # style: Retina
+
+  # The bold font face
+  bold:
+    family: SauceCodePro Nerd Font Mono
+    style: Semibold
+
+  # The italic font face
+  italic:
+    family: SauceCodePro Nerd Font Mono
+    style: Light Italic
+
+  # The bold italic font face
+  bold_italic:
+    family: SauceCodePro Nerd Font Mono
+    style: Bold Italic
+
+  # Point size of the font
+  size: 12.0
+
+  # Offset adjusts extra space around each character. `offset.y` can be seen
+  # as adjusting the line spacing, and `offset.x` the letter spacing
+  offset:
+    x: 0
+    y: 0
+
+#draw_bold_text_with_bright_colors: true
+
+
+key_bindings:
+  - { key: Q, mods: Control, chars: "\x11" }
