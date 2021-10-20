@@ -46,5 +46,7 @@ tmux_options: -f ~/.config/tmux/tmux.conf
 
 windows:
   - Main:
+    - tmuxinator start notes -p ~/.config/tmuxinator/notes.yml --no-attach --suppress-tmux-version-warning=SUPPRESS-TMUX-VERSION-WARNING--suppress-tmux-version-warning=SUPPRESS-TMUX-VERSION-WARNING
     - clear
     - ll
+

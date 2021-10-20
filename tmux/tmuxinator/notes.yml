@@ -1,7 +1,7 @@
 # ~/.config/tmuxinator/job.yml
 
 name: Notes
-root: ~/Documents/Notes
+root: ~/Documents/
 
 # Optional tmux socket
 # socket_name: foo
@@ -45,4 +45,5 @@ tmux_options: -f ~/.config/tmux/tmux.conf
 # attach: false
 
 windows:
-  - work-notes: vi index.md
+  - Tink: cd Git/tink-notes && vi index.md
+  - Private: cd GitLab/notes/ && vi index.md
