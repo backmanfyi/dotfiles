@@ -34,9 +34,6 @@ call plug#begin(stdpath('data') . '/plugged')
 " vim-surround
 Plug 'tpope/vim-surround'
 
-" CTags
-Plug 'ludovicchabant/vim-gutentags'
-
 " gitgutter
 Plug 'airblade/vim-gitgutter'
 
@@ -69,6 +66,11 @@ Plug 'vim-syntastic/syntastic'
 
 " Terraform Autocompletion 
 Plug 'juliosueiras/vim-terraform-completion'
+
+" vim-ariline/vim-ariline
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
 " configure treesitter
 call plug#end()
 
@@ -78,14 +80,16 @@ let g:deoplete#enable_at_startup = 1
 call deoplete#initialize()
 
 " Syntastic Config
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+" set statusline+=%#warningmsg#
+" set statusline+=%{SyntasticStatuslineFlag()}
+" set statusline+=%*
+" 
+" let g:syntastic_always_populate_loc_list = 1
+" let g:syntastic_auto_loc_list = 1
+" let g:syntastic_check_on_open = 1
+" let g:syntastic_check_on_wq = 0
+" let g:syntastic_python_python_exec = 'python3'
+" let g:syntastic_python_checkers = ['python']
 
 " (Optional)Remove Info(Preview) window
 set completeopt-=preview
@@ -121,6 +125,9 @@ EOF
 " autocmd FileType vimwiki : IndentLinesDisable
 autocmd FileType wiki : indentLineDisable
 
+" Airline
+let g:airline_theme="onedark"
+let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 """"""""""""""""""""""""""""""""""""""""""""""""""
 "                   COLORS                       "
 """"""""""""""""""""""""""""""""""""""""""""""""""

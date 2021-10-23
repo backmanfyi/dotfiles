@@ -39,8 +39,6 @@ fi
 if [[ $TMUX = "" ]] then
   tmuxinator start Main -p ~/.config/tmuxinator/main.yml \
     --suppress-tmux-version-warning=SUPPRESS-TMUX-VERSION-WARNING--suppress-tmux-version-warning=SUPPRESS-TMUX-VERSION-WARNING
-  tmuxinator start notes -p ~/.config/tmuxinator/notes.yml \
-    --no-attach --suppress-tmux-version-warning=SUPPRESS-TMUX-VERSION-WARNING--suppress-tmux-version-warning=SUPPRESS-TMUX-VERSION-WARNING
 fi
 
 # Source oh-my-zsh
