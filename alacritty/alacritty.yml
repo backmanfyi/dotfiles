@@ -52,3 +52,6 @@ font:
 
 key_bindings:
   - { key: Q, mods: Control, chars: "\x11" }
+  - { key: F, mods: Command, chars: "\x1bf" }
+  - { key: B, mods: Command, chars: "\x1bb" }
+  - { key: D, mods: Command, chars: "\x1bd" }
