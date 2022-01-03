@@ -23,6 +23,9 @@ export ZSH_CACHE_DIR=$XDG_CACHE_HOME/zsh
 export HISTFILE=$ZSH_CACHE_DIR/zhistory
 export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 
+# GOPATH
+export GOPATH="$HOME/Project/Go"
+
 # SSH
 export GIT_SSH_COMMAND="/usr/local/bin/ssh -F ${XDG_CONFIG_HOME}/ssh/config"
 
