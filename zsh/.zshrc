@@ -8,7 +8,7 @@ export KEYTIMEOUT=1
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git colored-man-pages osx)
+plugins=(git colored-man-pages macos)
 
 # enable color support for ls, less and man
 if [ -x /usr/bin/dircolors ]; then
@@ -57,7 +57,7 @@ alias ll='exa -l'
 alias lla='exa -al'
 alias tree='exa -T'
 alias cat='bat'
-alias assume-role='${XDG_CONFIG_HOME}/tmux/scripts/assume-role.sh'
+alias assume-role='eval `${XDG_CONFIG_HOME}/tmux/scripts/assume-role.sh`'
 
 # SSH
 if [ -s "${XDG_CONFIG_HOME}/ssh/config" ]
