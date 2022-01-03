@@ -17,9 +17,9 @@ set guicursor=
 "                   WHITE SPACE                  "
 """"""""""""""""""""""""""""""""""""""""""""""""""
 set tabstop=2               " number of columns occupied by a tab character
-set softtabstop=2           " see multiple spaces as tabstops so <BS> does the right thing
+set softtabstop=4           " see multiple spaces as tabstops so <BS> does the right thing
 set expandtab               " converts tabs to white space
-set shiftwidth=2            " width for autoindents
+set shiftwidth=4            " width for autoindents
 set autoindent              " indent a new line the same amount as the line just typed
 
 set list listchars=tab:>\ ,trail:+,eol:$ " See invisible characters
@@ -88,8 +88,7 @@ call deoplete#initialize()
 " let g:syntastic_auto_loc_list = 1
 " let g:syntastic_check_on_open = 1
 " let g:syntastic_check_on_wq = 0
-" let g:syntastic_python_python_exec = 'python3'
-" let g:syntastic_python_checkers = ['python']
+let g:syntastic_python_python_exec = '/usr/local/bin/python3'
 
 " (Optional)Remove Info(Preview) window
 set completeopt-=preview
