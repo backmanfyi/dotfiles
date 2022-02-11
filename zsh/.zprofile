@@ -1,6 +1,7 @@
 # Locale
 
 # PATH
+export PATH="/usr/local/sbin:$PATH"
 export PATH=$PATH":"$HOME"/perl5/bin"
 export PATH=$PATH":"$HOME"/.local/bin"
 export PATH=$PATH":"$HOME"/.local/bin/scripts"
