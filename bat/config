@@ -6,15 +6,8 @@
 # for a list of all available themes
 --theme="OneHalfLight"
 
-# Enable this to use italic text on the terminal. This is not supported on all
-# terminal emulators (like tmux, by default):
---italic-text=always
-
 # Uncomment the following line to disable automatic paging:
 --paging=never
 
-# Syntax mappings: map a certain filename pattern to a language.
-#   Example 1: use the C++ syntax for Arduino .ino files
-#   Example 2: Use ".gitignore"-style highlighting for ".ignore" files
---map-syntax "zsh*:INI"
+--map-syntax "zsh*:Bourne Again Shell (bash)"
 --map-syntax "*.zsh*:Bourne Again Shell (bash)"
