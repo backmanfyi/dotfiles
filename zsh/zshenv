@@ -52,7 +52,5 @@ export PATH="$PATH:$HOME/.local/bin"
 # Go
 export PATH=$PATH:$GOPATH/bin
 
-
-
 # Completions
 fpath+=($ZDOTDIR/completions)
