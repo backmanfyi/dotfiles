@@ -2,10 +2,11 @@ return {
   {
     "nvim-neotest/neotest",
     dependencies = {
-      "nvim-neotest/nvim-nio",
+      "antoinemadec/FixCursorHold.nvim",
       "nvim-lua/plenary.nvim",
       "nvim-neotest/neotest-go",
-      "antoinemadec/FixCursorHold.nvim",
+      "nvim-neotest/neotest-python",
+      "nvim-neotest/nvim-nio",
       "nvim-treesitter/nvim-treesitter",
     },
     opts = {
@@ -19,6 +20,8 @@ return {
           -- args = { "-tags=integration" }
           recursive_run = true,
         },
+        ["neotest-python"] = true,
+        ["nvim-nio"] = true,
       },
       -- Example for loading neotest-go with a custom config
       -- adapters = {

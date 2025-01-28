@@ -65,4 +65,4 @@ hide_when_typing = true
 bindings = [{ mouse = "Middle", action = "PasteSelection" }]
 
 [general]
-import = ["~/.config/alacritty/alacritty-themes/themes/dawnfox.toml"]
+import = ["~/.config/alacritty/alacritty-theme/themes/dawnfox.toml"]
