@@ -1,0 +1,74 @@
+# Create ZSH cache directory unless it already exists
+[[ -d $ZSH_CACHE_DIR ]] || mkdir -p $ZSH_CACHE_DIR
+
+# Vi mode
+bindkey -v
+export KEYTIMEOUT=1
+# change cursor shape in vi mode
+zle-keymap-select () {
+    if [[ $KEYMAP == vicmd ]]; then
+        # the command mode for vi
+        echo -ne "\e[2 q"
+    else
+        # the insert mode for vi
+        echo -ne "\e[5 q"
+    fi
+}
+precmd_functions+=(zle-keymap-select)
+zle -N zle-keymap-select
+
+# Reverse search
+bindkey '^R' history-incremental-search-backward
+
+# Start tmux
+if [[ $TMUX = "" ]] then
+  tmux new -s Main
+fi
+
+# Alias
+alias docker-up='docker-machine start default && eval "$(docker-machine env default)"'
+# nvim
+alias vim='nvim'
+alias vi='nvim'
+alias vimdiff='nvim -d'
+alias vis='EDITOR=vim visudo -f'
+# Remap old commands
+alias l='eza -l'
+alias la='eza -al'
+alias ls='eza'
+alias tree='eza -T'
+alias t='eza -T'
+alias cat='bat'
+
+# SSH
+if [ -s "${XDG_CONFIG_HOME}/ssh/config" ]
+then
+  SSH_CONFIG="-F ${XDG_CONFIG_HOME}/ssh/config"
+fi
+if [ -s "${XDG_CONFIG_HOME}/ssh/id_dsa" ]
+then
+  SSH_ID="-i ${XDG_CONFIG_HOME}/ssh/id_ed25519"
+fi
+alias ssh="ssh $SSH_CONFIG $SSH_ID "
+
+# AWS
+function aws_environment {
+  if [ -z $1 ]
+  then
+    env=$(awk '/\[profile|sso_role_name/{print $NF}' ${HOME}/.aws/config | sed 's/\]//g' | paste -d " " - - | sort | fzf | cut -d' ' -f1)
+  else
+    env=$1
+  fi
+    eval `/bin/bash ${XDG_CONFIG_HOME}/tmux/scripts/aws-sso-assume-role.sh $env`
+}
+
+FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+
+autoload bashcompinit && bashcompinit
+autoload -Uz compinit && compinit
+complete -C '/usr/local/bin/aws_completer' aws
+complete -o nospace -C /opt/homebrew/bin/terraform terraform
+source "/opt/homebrew/share/autojump/autojump.zsh"
+
+rm -f ~/.zcompdump; compinit
+eval "$(starship init zsh)"
