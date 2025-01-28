@@ -4,6 +4,20 @@
 # Vi mode
 bindkey -v
 export KEYTIMEOUT=1
+# change cursor shape in vi mode
+zle-keymap-select () {
+    if [[ $KEYMAP == vicmd ]]; then
+        # the command mode for vi
+        echo -ne "\e[2 q"
+    else
+        # the insert mode for vi
+        echo -ne "\e[5 q"
+    fi
+}
+precmd_functions+=(zle-keymap-select)
+zle -N zle-keymap-select
+
+
 
 # Reverse search
 bindkey '^R' history-incremental-search-backward
@@ -56,19 +70,7 @@ autoload bashcompinit && bashcompinit
 autoload -Uz compinit && compinit
 complete -C '/usr/local/bin/aws_completer' aws
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
-
-
-function alacritty-theme {
-  theme=$1
-  # sed doesn't like symlinks, get the absolute path
-  config_path=$(realpath ~/.config/alacritty/alacritty.yml)
-
-  sed -i '' "s/themes\/everforest_*.*/themes\/everforest_${theme}.yaml/g" $config_path
-
-  echo "switched to $theme."
-}
-
 source "/opt/homebrew/share/autojump/autojump.zsh"
-source "${XDG_CONFIG_HOME}/zsh/.zshenv"
+
 rm -f ~/.zcompdump; compinit
 eval "$(starship init zsh)"
