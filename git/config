@@ -1,0 +1,19 @@
+[user]
+	name = Lars Backman
+	email = lars@backman.fyi
+
+[include]
+    path = /Users/larsbackman/.config/dotfiles/git/themes.ini
+
+[include]
+    path = /Users/larsbackman/.config/dotfiles/git/alias.ini
+
+[credential]
+	helper = osxkeychain
+
+[core]
+	pager = delta
+
+[delta]
+    features = mirthful-willow
+    side-by-side = true
