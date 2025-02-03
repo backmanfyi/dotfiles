@@ -49,8 +49,11 @@ export HOMEBREW_NO_ENV_HINTS=1
 ## Home Path
 export PATH="$PATH:$HOME/.config/dotfiles/scripts"
 export PATH="$PATH:$HOME/.local/bin"
+
 # Go
 export PATH=$PATH:$GOPATH/bin
+
+export STARSHIP_CONFIG="${XDG_CONFIG_HOME}/starship/config.toml"
 
 # Completions
 fpath+=($ZDOTDIR/completions)
