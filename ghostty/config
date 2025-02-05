@@ -2,10 +2,10 @@
 theme = "dawnfox"
 
 # Font
-font-family = "SauceCodePro NFM"
-font-family-bold = "SauceCodePro NFM Bold"
+font-family = "SauceCodePro NFM Medium"
+font-family-bold = "SauceCodePro NFM SemiBold"
 font-family-italic = "SauceCodePro NFM Italic"
-font-family-bold-italic = "SauceCodePro NFM Bold Italic"
+font-family-bold-italic = "SauceCodePro NFM SemiBold Italic"
 font-size = 11
 
 # Window configuration
