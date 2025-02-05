@@ -1,6 +1,6 @@
 [user]
 	name = Lars Backman
-	email = lars@juni.co
+	email = lars@backman.fyi
 
 [include]
     path = /Users/larsbackman/.config/dotfiles/git/themes.ini

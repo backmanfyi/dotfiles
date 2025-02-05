@@ -22,7 +22,12 @@ bindkey '^R' history-incremental-search-backward
 
 # Start tmux
 if [[ $TMUX = "" ]] then
-  tmux new -s Main
+  main_session_name="main"
+  if ! tmux has-session -t main 2>/dev/null; then 
+    tmux new -s $main_session_name
+  else
+    tmux attach-session -t $main_session_name
+  fi
 fi
 
 # Alias
