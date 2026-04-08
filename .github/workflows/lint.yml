@@ -103,4 +103,5 @@ jobs:
           echo "OK: no hardcoded home paths"
 
       - name: setup.sh is executable
-        run: test -x setup.sh || (echo "ERROR: setup.sh is not executable"; exit 1)
+        run: |
+          test -x setup.sh || (echo "ERROR: setup.sh is not executable"; exit 1)
