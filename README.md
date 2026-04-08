@@ -72,7 +72,9 @@ The script is fully idempotent — safe to re-run at any time. Each step checks 
 | **4. Symlinks** | Creates `~/.config/{bat,ghostty,git,nvim,ssh,starship,tmux}` → dotfiles repo |
 | **5. Claude Code** | Links `~/.claude/CLAUDE.md`, `settings.json`, and `agents/` → dotfiles repo |
 | **6. Git hooks** | `chmod +x` on all files in `git/hooks/` |
-| **7. SSH permissions** | `chmod 700` on the SSH dir, `chmod 600` on all files (SSH silently ignores loose permissions) |
+| **7. SSH include** | Adds `Include ~/.config/ssh/config` to `~/.ssh/config` so all SSH clients use the managed config |
+| **8. SSH permissions** | `chmod 700` on the SSH dir, `chmod 600` on all files (SSH silently ignores loose permissions) |
+| **9. Cleanup** | Removes legacy `~/.zshrc` / `~/.zshenv` (with ZDOTDIR set these are never sourced and cause confusion) |
 
 To preview what the script would do without making any changes:
 

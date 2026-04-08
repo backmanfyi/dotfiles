@@ -62,7 +62,7 @@ done
 # 1. Ensure zsh can find ZDOTDIR on a fresh machine.
 # /etc/zshenv is the only file zsh reads before ZDOTDIR is known.
 step_zdotdir() {
-  header "1/7  ZDOTDIR bootstrap"
+  header "1/9  ZDOTDIR bootstrap"
 
   if grep -q "ZDOTDIR" /etc/zshenv 2>/dev/null; then
     ok "ZDOTDIR already set in /etc/zshenv"
@@ -81,7 +81,7 @@ step_zdotdir() {
 
 # 2. Install Homebrew if missing, then install all packages from the Brewfile.
 step_homebrew() {
-  header "2/7  Homebrew + packages"
+  header "2/9  Homebrew + packages"
 
   if ! command_exists brew; then
     info "Installing Homebrew"
@@ -104,7 +104,7 @@ step_homebrew() {
 # 3. Register the Homebrew-managed zsh as a valid login shell and set it as
 # the default. macOS ships an older /bin/zsh; this ensures we use the current one.
 step_shell() {
-  header "3/7  Login shell"
+  header "3/9  Login shell"
 
   if ! grep -qF "${BREW_ZSH}" /etc/shells 2>/dev/null; then
     info "Adding ${BREW_ZSH} to /etc/shells"
@@ -129,7 +129,7 @@ step_shell() {
 
 # 4. Create symlinks from ~/.config/* to the dotfiles repo.
 step_symlinks() {
-  header "4/7  Config symlinks"
+  header "4/9  Config symlinks"
 
   local zdotdir="${CONFIG_DIR}/zsh"
   run mkdir -p "${zdotdir}"
@@ -180,7 +180,7 @@ _link() {
 # ~/.claude/ is not an XDG dir so these are linked individually rather than
 # symlinking the whole directory (which contains runtime state we don't track).
 step_claude() {
-  header "5/7  Claude Code config"
+  header "5/9  Claude Code config"
 
   local claude_src="${DOTFILES_DIR}/claude"
   local claude_dst="${HOME}/.claude"
@@ -196,7 +196,7 @@ step_claude() {
 
 # 6. Git hooks need the executable bit or git silently ignores them.
 step_git_hooks() {
-  header "5/7  Git hooks"
+  header "6/9  Git hooks"
 
   local hooks_dir="${DOTFILES_DIR}/git/hooks"
   if [[ ! -d "${hooks_dir}" ]]; then
@@ -211,10 +211,37 @@ step_git_hooks() {
   ok "Git hooks executable"
 }
 
-# 6. SSH is strict about config file permissions and silently ignores configs
+# 7. Ensure ~/.ssh/config includes the managed dotfiles SSH config.
+# ~/.ssh/config is the system default read by all SSH clients; we keep it minimal
+# and use Include to pull in the managed config from the dotfiles repo.
+# OrbStack's Include must stay first (it adds Host blocks before any Match/Host).
+step_ssh_include() {
+  header "7/9  SSH include"
+
+  local system_ssh="${HOME}/.ssh/config"
+  local managed_include="Include ~/.config/ssh/config"
+
+  run mkdir -p "${HOME}/.ssh"
+
+  if [[ -f "${system_ssh}" ]] && grep -qF "~/.config/ssh/config" "${system_ssh}" 2>/dev/null; then
+    ok "~/.ssh/config already includes managed config"
+    return
+  fi
+
+  info "Adding managed config Include to ~/.ssh/config"
+  if ! $DRY_RUN; then
+    printf '\n# Managed dotfiles config — edit at ~/.config/dotfiles/ssh/config\n%s\n' \
+      "${managed_include}" >> "${system_ssh}"
+  else
+    dry "printf '...Include...' >> ${system_ssh}"
+  fi
+  ok "~/.ssh/config includes managed config"
+}
+
+# 8. SSH is strict about config file permissions and silently ignores configs
 # with group/world read access.
 step_ssh_permissions() {
-  header "6/7  SSH permissions"
+  header "8/9  SSH permissions"
 
   local ssh_link="${CONFIG_DIR}/ssh"
   if [[ ! -e "${ssh_link}" ]]; then
@@ -232,6 +259,30 @@ step_ssh_permissions() {
   ok "SSH permissions set"
 }
 
+# 9. Remove legacy shell files that conflict with the ZDOTDIR-managed config.
+# With ZDOTDIR set, ~/.zshrc is never sourced — it only causes confusion.
+# ~/.bashrc and ~/.bash_profile are left alone (may be used by scripts/tools).
+step_cleanup_shell() {
+  header "9/9  Clean up legacy shell files"
+
+  local -a legacy=("${HOME}/.zshrc" "${HOME}/.zshenv")
+  local removed=0
+
+  for f in "${legacy[@]}"; do
+    if [[ -L "${f}" ]]; then
+      ok "${f} is a symlink — skipping"
+      continue
+    fi
+    if [[ -f "${f}" ]]; then
+      info "Removing legacy ${f}"
+      run rm "${f}"
+      (( removed++ )) || true
+    fi
+  done
+
+  [[ "${removed}" -eq 0 ]] && ok "No legacy shell files to remove"
+}
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 printf "\n  dotfiles setup\n  %s\n" "${DOTFILES_DIR}"
@@ -243,7 +294,9 @@ step_shell
 step_symlinks
 step_claude
 step_git_hooks
+step_ssh_include
 step_ssh_permissions
+step_cleanup_shell
 
 printf "\n${DIM}── done ──────────────────────────────────────────────${RESET}\n\n"
 if ! $DRY_RUN; then
