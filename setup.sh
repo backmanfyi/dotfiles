@@ -62,7 +62,7 @@ done
 # 1. Ensure zsh can find ZDOTDIR on a fresh machine.
 # /etc/zshenv is the only file zsh reads before ZDOTDIR is known.
 step_zdotdir() {
-  header "1/5  ZDOTDIR bootstrap"
+  header "1/7  ZDOTDIR bootstrap"
 
   if grep -q "ZDOTDIR" /etc/zshenv 2>/dev/null; then
     ok "ZDOTDIR already set in /etc/zshenv"
@@ -81,7 +81,7 @@ step_zdotdir() {
 
 # 2. Install Homebrew if missing, then install all packages from the Brewfile.
 step_homebrew() {
-  header "2/5  Homebrew + packages"
+  header "2/7  Homebrew + packages"
 
   if ! command_exists brew; then
     info "Installing Homebrew"
@@ -104,7 +104,7 @@ step_homebrew() {
 # 3. Register the Homebrew-managed zsh as a valid login shell and set it as
 # the default. macOS ships an older /bin/zsh; this ensures we use the current one.
 step_shell() {
-  header "3/5  Login shell"
+  header "3/7  Login shell"
 
   if ! grep -qF "${BREW_ZSH}" /etc/shells 2>/dev/null; then
     info "Adding ${BREW_ZSH} to /etc/shells"
@@ -129,7 +129,7 @@ step_shell() {
 
 # 4. Create symlinks from ~/.config/* to the dotfiles repo.
 step_symlinks() {
-  header "4/5  Config symlinks"
+  header "4/7  Config symlinks"
 
   local zdotdir="${CONFIG_DIR}/zsh"
   run mkdir -p "${zdotdir}"
@@ -176,9 +176,27 @@ _link() {
   run ln -s "${src}" "${dst}"
 }
 
-# 5. Git hooks need the executable bit or git silently ignores them.
+# 5. Symlink Claude Code config — CLAUDE.md, settings.json, and agents/.
+# ~/.claude/ is not an XDG dir so these are linked individually rather than
+# symlinking the whole directory (which contains runtime state we don't track).
+step_claude() {
+  header "5/7  Claude Code config"
+
+  local claude_src="${DOTFILES_DIR}/claude"
+  local claude_dst="${HOME}/.claude"
+
+  run mkdir -p "${claude_dst}/agents"
+
+  _link "${claude_src}/CLAUDE.md"    "${claude_dst}/CLAUDE.md"
+  _link "${claude_src}/settings.json" "${claude_dst}/settings.json"
+  _link "${claude_src}/agents"        "${claude_dst}/agents"
+
+  ok "Claude Code config linked"
+}
+
+# 6. Git hooks need the executable bit or git silently ignores them.
 step_git_hooks() {
-  header "5/6  Git hooks"
+  header "5/7  Git hooks"
 
   local hooks_dir="${DOTFILES_DIR}/git/hooks"
   if [[ ! -d "${hooks_dir}" ]]; then
@@ -196,7 +214,7 @@ step_git_hooks() {
 # 6. SSH is strict about config file permissions and silently ignores configs
 # with group/world read access.
 step_ssh_permissions() {
-  header "6/6  SSH permissions"
+  header "6/7  SSH permissions"
 
   local ssh_link="${CONFIG_DIR}/ssh"
   if [[ ! -e "${ssh_link}" ]]; then
@@ -223,6 +241,7 @@ step_zdotdir
 step_homebrew
 step_shell
 step_symlinks
+step_claude
 step_git_hooks
 step_ssh_permissions
 
