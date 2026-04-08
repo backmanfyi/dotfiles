@@ -16,6 +16,7 @@ Personal macOS developer environment for platform and infrastructure engineering
 - [How it works](#how-it-works)
 - [Shell](#shell)
 - [Tools](#tools)
+- [Claude Code](#claude-code)
 - [Security](#security)
 - [CI/CD](#cicd)
 - [Customisation](#customisation)
@@ -36,6 +37,7 @@ Personal macOS developer environment for platform and infrastructure engineering
 | `ssh/` | SSH | Client config, 1Password agent |
 | `bat/` | bat | Syntax-highlighted `cat` replacement |
 | `brew/` | Homebrew | Package manifest (Brewfile) |
+| `claude/` | Claude Code | CLAUDE.md, MCP servers, custom agents |
 | `scripts/` | — | Utility scripts on `$PATH` |
 
 ---
@@ -68,8 +70,9 @@ The script is fully idempotent — safe to re-run at any time. Each step checks 
 | **2. Homebrew** | Installs Homebrew if missing, then runs `brew bundle` from the Brewfile |
 | **3. Login shell** | Registers `/opt/homebrew/bin/zsh` in `/etc/shells` and sets it as your default shell |
 | **4. Symlinks** | Creates `~/.config/{bat,ghostty,git,nvim,ssh,starship,tmux}` → dotfiles repo |
-| **5. Git hooks** | `chmod +x` on all files in `git/hooks/` |
-| **6. SSH permissions** | `chmod 700` on the SSH dir, `chmod 600` on all files (SSH silently ignores loose permissions) |
+| **5. Claude Code** | Links `~/.claude/CLAUDE.md`, `settings.json`, and `agents/` → dotfiles repo |
+| **6. Git hooks** | `chmod +x` on all files in `git/hooks/` |
+| **7. SSH permissions** | `chmod 700` on the SSH dir, `chmod 600` on all files (SSH silently ignores loose permissions) |
 
 To preview what the script would do without making any changes:
 
@@ -185,6 +188,25 @@ Diff output via [delta](https://github.com/dandavison/delta) with side-by-side v
 | Node.js | [Volta](https://volta.sh) | Per-project pinning via `package.json` |
 | Python | [pyenv](https://github.com/pyenv/pyenv) | Lazy-loaded, also [uv](https://docs.astral.sh/uv/) available |
 | Go | Homebrew | Single system version |
+
+---
+
+## Claude Code
+
+Config at `claude/`. Three files are tracked:
+
+| File | Purpose |
+|---|---|
+| `CLAUDE.md` | Global instructions — workflow preferences, git rules, communication style, auto-allowed commands |
+| `settings.json` | MCP server definitions (GitHub, Context7). No secrets — tokens are passed via environment variables |
+| `agents/` | Custom subagent definitions (`auth0-expert`, `owasp-top10-expert`) |
+
+Everything else in `~/.claude/` (sessions, tasks, cache, telemetry, etc.) is runtime state and not tracked.
+
+> **Note:** On an existing machine where `~/.claude/agents/` already exists as a real directory, remove it first before running `setup.sh`:
+> ```sh
+> rm -rf ~/.claude/agents
+> ```
 
 ---
 
