@@ -176,10 +176,27 @@ _link() {
   run ln -s "${src}" "${dst}"
 }
 
-# 5. SSH is strict about config file permissions and silently ignores configs
+# 5. Git hooks need the executable bit or git silently ignores them.
+step_git_hooks() {
+  header "5/6  Git hooks"
+
+  local hooks_dir="${DOTFILES_DIR}/git/hooks"
+  if [[ ! -d "${hooks_dir}" ]]; then
+    warn "No hooks directory found at ${hooks_dir} — skipping"
+    return
+  fi
+
+  while IFS= read -r -d '' hook; do
+    info "chmod +x $(basename "${hook}")"
+    run chmod +x "${hook}"
+  done < <(find "${hooks_dir}" -type f -print0)
+  ok "Git hooks executable"
+}
+
+# 6. SSH is strict about config file permissions and silently ignores configs
 # with group/world read access.
 step_ssh_permissions() {
-  header "5/5  SSH permissions"
+  header "6/6  SSH permissions"
 
   local ssh_link="${CONFIG_DIR}/ssh"
   if [[ ! -e "${ssh_link}" ]]; then
@@ -206,6 +223,7 @@ step_zdotdir
 step_homebrew
 step_shell
 step_symlinks
+step_git_hooks
 step_ssh_permissions
 
 printf "\n${DIM}── done ──────────────────────────────────────────────${RESET}\n\n"
