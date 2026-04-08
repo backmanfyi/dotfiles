@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Pre-commit hook: scan staged changes for secrets using TruffleHog.
+# Installed globally via core.hooksPath in ~/.config/git/config.
+
+if ! command -v trufflehog &>/dev/null; then
+  echo "[pre-commit] trufflehog not found, skipping secret scan (run: brew install trufflehog)"
+  exit 0
+fi
+
+echo "[pre-commit] scanning for secrets..."
+if trufflehog git "file://$(git rev-parse --show-toplevel)" \
+    --since-commit HEAD \
+    --only-verified \
+    --fail \
+    --no-update \
+    2>/dev/null; then
+  echo "[pre-commit] no secrets found"
+else
+  echo ""
+  echo "[pre-commit] TruffleHog found verified secrets — commit blocked."
+  echo "             Review the output above, remove the secrets, then try again."
+  echo "             To skip this check (use with caution): git commit --no-verify"
+  exit 1
+fi
