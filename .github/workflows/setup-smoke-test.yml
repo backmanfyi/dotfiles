@@ -1,0 +1,46 @@
+name: Setup smoke test
+
+on:
+  pull_request:
+    branches: [main]
+
+# Only run one smoke test at a time per PR — cancel in-flight runs on new push
+concurrency:
+  group: smoke-test-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    name: dry-run on macOS
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bash syntax check
+        run: bash -n setup.sh
+
+      - name: Dry run
+        run: bash setup.sh --dry-run
+
+      - name: Help flag works
+        run: bash setup.sh --help
+
+      - name: Unknown flag exits non-zero
+        run: |
+          if bash setup.sh --invalid-flag 2>/dev/null; then
+            echo "ERROR: setup.sh should exit non-zero for unknown flags"
+            exit 1
+          fi
+          echo "OK: unknown flag rejected correctly"
+
+      - name: Validate Brewfile syntax
+        run: ruby -c brew/Brewfile
+
+      - name: No hardcoded absolute paths in setup.sh
+        run: |
+          if grep -n '/Users/' setup.sh; then
+            echo "ERROR: hardcoded /Users/ paths in setup.sh"
+            exit 1
+          fi
+          echo "OK"

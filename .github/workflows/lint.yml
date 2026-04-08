@@ -1,0 +1,106 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # ── Shell scripts ────────────────────────────────────────────────────────────
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run shellcheck
+        # severity=error catches real bugs; warnings are for style issues in
+        # existing scripts that are out of scope for this pipeline.
+        run: |
+          find . -name '*.sh' \
+            -not -path './.git/*' \
+            -not -path './nvim/*' \
+            | xargs shellcheck --severity=error
+
+  # ── Zsh config syntax ────────────────────────────────────────────────────────
+  zsh-syntax:
+    name: zsh syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zsh
+        run: sudo apt-get install -y zsh
+
+      - name: Check zshrc syntax
+        run: zsh -n zsh/zshrc
+
+      - name: Check zshenv syntax
+        run: zsh -n zsh/zshenv
+
+  # ── TOML validation ──────────────────────────────────────────────────────────
+  toml:
+    name: TOML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install taplo
+        run: |
+          curl -fsSL \
+            "https://github.com/tamasfe/taplo/releases/download/0.9.3/taplo-linux-x86_64.gz" \
+            | gunzip -c > /usr/local/bin/taplo
+          chmod +x /usr/local/bin/taplo
+
+      - name: Validate starship config
+        run: taplo check starship/config.toml
+
+  # ── Repo integrity checks ────────────────────────────────────────────────────
+  repo-checks:
+    name: repo checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: All symlink targets exist in repo
+        run: |
+          missing=0
+          configs=("bat" "ghostty" "git" "nvim" "ssh" "starship" "tmux")
+          for config in "${configs[@]}"; do
+            if [[ ! -e "${config}" ]]; then
+              echo "MISSING: ${config}"
+              missing=1
+            else
+              echo "OK: ${config}"
+            fi
+          done
+          for f in zsh/zshrc zsh/zshenv; do
+            if [[ ! -f "${f}" ]]; then
+              echo "MISSING: ${f}"
+              missing=1
+            else
+              echo "OK: ${f}"
+            fi
+          done
+          exit "${missing}"
+
+      - name: No hardcoded home directory paths
+        # Catches /Users/<name> leaking into configs that should be portable.
+        # Excludes the README (documentation) and workflow files themselves.
+        run: |
+          if grep -rn '/Users/' \
+            --include='*.sh' \
+            --include='*.conf' \
+            --include='*.toml' \
+            --include='*.ini' \
+            --include='*.zsh' \
+            --include='*.zshrc' \
+            --include='*.zshenv' \
+            .; then
+            echo ""
+            echo "ERROR: hardcoded /Users/ paths found above — use \$HOME or \$XDG_CONFIG_HOME instead"
+            exit 1
+          fi
+          echo "OK: no hardcoded home paths"
+
+      - name: setup.sh is executable
+        run: test -x setup.sh || (echo "ERROR: setup.sh is not executable"; exit 1)
