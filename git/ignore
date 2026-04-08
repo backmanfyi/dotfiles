@@ -1,0 +1,51 @@
+# Claude Code
+**/.claude/settings.local.json
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Editors
+*.swp
+*.swo
+*~
+.vimrc.local
+.nvim.lua
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Build artifacts
+*.o
+*.a
+*.so
+dist/
+build/
+target/
+
+# Dependency dirs
+node_modules/
+vendor/
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# Go
+*.test
+coverage.out
