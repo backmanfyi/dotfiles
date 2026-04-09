@@ -90,6 +90,8 @@ complete -C '/usr/local/bin/aws_completer' aws
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
 eval "$(zoxide init zsh)"
 alias j='z'
+eval "$(direnv hook zsh)"
+eval "$(atuin init zsh --disable-up-arrow)"
 
 source "${ZDOTDIR}/.zshrc_local"
 eval "$(starship init zsh)"
