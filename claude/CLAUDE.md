@@ -1,8 +1,8 @@
 # Personal Claude Code Preferences
 
 ## About Me
-- Platform Engineer / Infrastructure Engineer
-- Focus: IaC, Kubernetes, cloud infrastructure, DevOps
+- Platform Engineer / Infrastructure Engineer + Full-stack TypeScript developer
+- Focus: IaC, Kubernetes, cloud infrastructure, DevOps, Astro/React, Cloudflare Workers
 
 ## Permissions - Auto-Allow
 - Always read files without asking for permission
@@ -44,6 +44,16 @@
 - Clear, readable variable and function names instead of comments (clean and straightforward code)
 - Only add comments for non-obvious business logic or "why" explanations
 - NO lazy type workarounds - add proper enum values instead of `| string`, extend interfaces properly instead of using `any` or type assertions
+
+## TypeScript
+- Strict mode always — no `any`; use `unknown` with type narrowing instead
+- `const` over `let`, never `var`
+- `async/await` over `.then()` chains
+- Named exports preferred; default exports only for Astro pages/layouts
+- Zod for runtime validation at system boundaries (API inputs, env vars)
+- pnpm for package management — never npm or yarn in JS/TS projects
+- Run `pnpm turbo test --filter <app>` for unit tests (Vitest)
+- Run `pnpm --filter <app> test:e2e` for E2E tests (Playwright)
 
 ## Communication
 - Keep explanations concise - bullet points over paragraphs
