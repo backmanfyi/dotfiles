@@ -1,24 +1,84 @@
 #!/usr/bin/env bash
-# Pre-commit hook: scan staged changes for secrets using TruffleHog.
-# Installed globally via core.hooksPath in ~/.config/git/config.
+# Global pre-commit hook — runs in every repository via core.hooksPath.
+#
+# Checks (in order):
+#   1. No merge conflict markers in staged files
+#   2. No large files (>500 KB) staged
+#   3. shellcheck on staged .sh files
+#   4. TruffleHog secret scan
+#   5. Repo-local hook at .githooks/pre-commit (if present and executable)
+
+set -euo pipefail
+
+staged() { git diff --cached --name-only --diff-filter=ACM; }
+
+# ── 1. Merge conflict markers ──────────────────────────────────────────────────
+
+conflict_files=$(staged | xargs grep -rl "^<<<<<<< " 2>/dev/null || true)
+if [[ -n "${conflict_files}" ]]; then
+  echo ""
+  echo "[pre-commit] merge conflict markers found in:"
+  echo "${conflict_files}" | sed 's/^/             /'
+  echo "             Resolve conflicts before committing."
+  exit 1
+fi
+
+# ── 2. Large file guard (>500 KB) ─────────────────────────────────────────────
+
+max_bytes=512000
+while IFS= read -r file; do
+  [[ -f "${file}" ]] || continue
+  size=$(wc -c < "${file}")
+  if (( size > max_bytes )); then
+    echo ""
+    echo "[pre-commit] large file blocked: ${file} ($(( size / 1024 )) KB > 500 KB)"
+    echo "             Use git-lfs for large assets, or review if this file should be committed."
+    exit 1
+  fi
+done < <(staged)
+
+# ── 3. shellcheck on staged .sh files ─────────────────────────────────────────
+
+if command -v shellcheck &>/dev/null; then
+  mapfile -t sh_files < <(staged | grep '\.sh$' || true)
+  if (( ${#sh_files[@]} > 0 )); then
+    echo "[pre-commit] shellcheck (${#sh_files[@]} file(s))..."
+    if ! shellcheck --severity=error "${sh_files[@]}"; then
+      echo ""
+      echo "[pre-commit] shellcheck found errors — commit blocked."
+      exit 1
+    fi
+  fi
+else
+  echo "[pre-commit] shellcheck not found, skipping (run: brew install shellcheck)"
+fi
+
+# ── 4. TruffleHog secret scan ─────────────────────────────────────────────────
 
 if ! command -v trufflehog &>/dev/null; then
   echo "[pre-commit] trufflehog not found, skipping secret scan (run: brew install trufflehog)"
-  exit 0
+else
+  echo "[pre-commit] scanning for secrets..."
+  if trufflehog git "file://$(git rev-parse --show-toplevel)" \
+      --since-commit HEAD \
+      --only-verified \
+      --fail \
+      --no-update \
+      2>/dev/null; then
+    echo "[pre-commit] no secrets found"
+  else
+    echo ""
+    echo "[pre-commit] TruffleHog found verified secrets — commit blocked."
+    echo "             Review the output above, remove the secrets, then try again."
+    echo "             To skip this check (use with caution): git commit --no-verify"
+    exit 1
+  fi
 fi
 
-echo "[pre-commit] scanning for secrets..."
-if trufflehog git "file://$(git rev-parse --show-toplevel)" \
-    --since-commit HEAD \
-    --only-verified \
-    --fail \
-    --no-update \
-    2>/dev/null; then
-  echo "[pre-commit] no secrets found"
-else
-  echo ""
-  echo "[pre-commit] TruffleHog found verified secrets — commit blocked."
-  echo "             Review the output above, remove the secrets, then try again."
-  echo "             To skip this check (use with caution): git commit --no-verify"
-  exit 1
+# ── 5. Repo-local hook ────────────────────────────────────────────────────────
+
+repo_hook="$(git rev-parse --show-toplevel)/.githooks/pre-commit"
+if [[ -x "${repo_hook}" ]]; then
+  echo "[pre-commit] running repo-local hook..."
+  "${repo_hook}"
 fi

@@ -195,19 +195,21 @@ step_claude() {
 }
 
 # 6. Git hooks need the executable bit or git silently ignores them.
+# Also makes .githooks/ executable — these are repo-local hooks chained
+# from the global hook and must be executable to be invoked.
 step_git_hooks() {
   header "6/10  Git hooks"
 
-  local hooks_dir="${DOTFILES_DIR}/git/hooks"
-  if [[ ! -d "${hooks_dir}" ]]; then
-    warn "No hooks directory found at ${hooks_dir} — skipping"
-    return
-  fi
+  local -a hook_dirs=("${DOTFILES_DIR}/git/hooks" "${DOTFILES_DIR}/.githooks")
 
-  while IFS= read -r -d '' hook; do
-    info "chmod +x $(basename "${hook}")"
-    run chmod +x "${hook}"
-  done < <(find "${hooks_dir}" -type f -print0)
+  for hooks_dir in "${hook_dirs[@]}"; do
+    [[ -d "${hooks_dir}" ]] || continue
+    while IFS= read -r -d '' hook; do
+      info "chmod +x $(basename "${hook}")"
+      run chmod +x "${hook}"
+    done < <(find "${hooks_dir}" -type f -print0)
+  done
+
   ok "Git hooks executable"
 }
 
