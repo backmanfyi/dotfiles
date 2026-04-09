@@ -62,7 +62,7 @@ done
 # 1. Ensure zsh can find ZDOTDIR on a fresh machine.
 # /etc/zshenv is the only file zsh reads before ZDOTDIR is known.
 step_zdotdir() {
-  header "1/9  ZDOTDIR bootstrap"
+  header "1/10  ZDOTDIR bootstrap"
 
   if grep -q "ZDOTDIR" /etc/zshenv 2>/dev/null; then
     ok "ZDOTDIR already set in /etc/zshenv"
@@ -81,7 +81,7 @@ step_zdotdir() {
 
 # 2. Install Homebrew if missing, then install all packages from the Brewfile.
 step_homebrew() {
-  header "2/9  Homebrew + packages"
+  header "2/10  Homebrew + packages"
 
   if ! command_exists brew; then
     info "Installing Homebrew"
@@ -104,7 +104,7 @@ step_homebrew() {
 # 3. Register the Homebrew-managed zsh as a valid login shell and set it as
 # the default. macOS ships an older /bin/zsh; this ensures we use the current one.
 step_shell() {
-  header "3/9  Login shell"
+  header "3/10  Login shell"
 
   if ! grep -qF "${BREW_ZSH}" /etc/shells 2>/dev/null; then
     info "Adding ${BREW_ZSH} to /etc/shells"
@@ -129,7 +129,7 @@ step_shell() {
 
 # 4. Create symlinks from ~/.config/* to the dotfiles repo.
 step_symlinks() {
-  header "4/9  Config symlinks"
+  header "4/10  Config symlinks"
 
   local zdotdir="${CONFIG_DIR}/zsh"
   run mkdir -p "${zdotdir}"
@@ -180,7 +180,7 @@ _link() {
 # ~/.claude/ is not an XDG dir so these are linked individually rather than
 # symlinking the whole directory (which contains runtime state we don't track).
 step_claude() {
-  header "5/9  Claude Code config"
+  header "5/10  Claude Code config"
 
   local claude_src="${DOTFILES_DIR}/claude"
   local claude_dst="${HOME}/.claude"
@@ -195,19 +195,21 @@ step_claude() {
 }
 
 # 6. Git hooks need the executable bit or git silently ignores them.
+# Also makes .githooks/ executable — these are repo-local hooks chained
+# from the global hook and must be executable to be invoked.
 step_git_hooks() {
-  header "6/9  Git hooks"
+  header "6/10  Git hooks"
 
-  local hooks_dir="${DOTFILES_DIR}/git/hooks"
-  if [[ ! -d "${hooks_dir}" ]]; then
-    warn "No hooks directory found at ${hooks_dir} — skipping"
-    return
-  fi
+  local -a hook_dirs=("${DOTFILES_DIR}/git/hooks" "${DOTFILES_DIR}/.githooks")
 
-  while IFS= read -r -d '' hook; do
-    info "chmod +x $(basename "${hook}")"
-    run chmod +x "${hook}"
-  done < <(find "${hooks_dir}" -type f -print0)
+  for hooks_dir in "${hook_dirs[@]}"; do
+    [[ -d "${hooks_dir}" ]] || continue
+    while IFS= read -r -d '' hook; do
+      info "chmod +x $(basename "${hook}")"
+      run chmod +x "${hook}"
+    done < <(find "${hooks_dir}" -type f -print0)
+  done
+
   ok "Git hooks executable"
 }
 
@@ -216,7 +218,7 @@ step_git_hooks() {
 # and use Include to pull in the managed config from the dotfiles repo.
 # OrbStack's Include must stay first (it adds Host blocks before any Match/Host).
 step_ssh_include() {
-  header "7/9  SSH include"
+  header "7/10  SSH include"
 
   local system_ssh="${HOME}/.ssh/config"
   local managed_include="Include ~/.config/ssh/config"
@@ -241,7 +243,7 @@ step_ssh_include() {
 # 8. SSH is strict about config file permissions and silently ignores configs
 # with group/world read access.
 step_ssh_permissions() {
-  header "8/9  SSH permissions"
+  header "8/10  SSH permissions"
 
   local ssh_link="${CONFIG_DIR}/ssh"
   if [[ ! -e "${ssh_link}" ]]; then
@@ -263,7 +265,7 @@ step_ssh_permissions() {
 # With ZDOTDIR set, ~/.zshrc is never sourced — it only causes confusion.
 # ~/.bashrc and ~/.bash_profile are left alone (may be used by scripts/tools).
 step_cleanup_shell() {
-  header "9/9  Clean up legacy shell files"
+  header "9/10  Clean up legacy shell files"
 
   local -a legacy=("${HOME}/.zshrc" "${HOME}/.zshenv")
   local removed=0
@@ -283,6 +285,81 @@ step_cleanup_shell() {
   [[ "${removed}" -eq 0 ]] && ok "No legacy shell files to remove"
 }
 
+# 10. Apply sensible macOS defaults for a developer environment.
+# All settings are idempotent — safe to re-run. Affected apps are restarted
+# at the end to pick up the new values.
+step_macos_defaults() {
+  header "10/10  macOS defaults"
+
+  # ── Keyboard ──────────────────────────────────────────────────────────────
+  # Faster key repeat — essential for vim and terminal work.
+  # System default: InitialKeyRepeat=25, KeyRepeat=6
+  run defaults write NSGlobalDomain KeyRepeat -int 2
+  run defaults write NSGlobalDomain InitialKeyRepeat -int 15
+  # Allow key repeat in all apps (disables the press-and-hold accent popup)
+  run defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+  # Disable smart quotes, smart dashes, autocorrect — all break code
+  run defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+  run defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
+  run defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+  run defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
+  run defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+
+  # ── Finder ────────────────────────────────────────────────────────────────
+  run defaults write com.apple.finder AppleShowAllFiles -bool true
+  run defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+  run defaults write com.apple.finder ShowPathbar -bool true
+  run defaults write com.apple.finder ShowStatusBar -bool true
+  # Show full POSIX path in Finder title bar
+  run defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
+  # Search the current folder by default (not "This Mac")
+  run defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
+  # Keep folders on top when sorting by name
+  run defaults write com.apple.finder _FXSortFoldersFirst -bool true
+  # Default to list view
+  run defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
+  # No warning when changing a file extension
+  run defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+  # Don't write .DS_Store on network or USB volumes
+  run defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+  run defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
+
+  # ── Dock ──────────────────────────────────────────────────────────────────
+  run defaults write com.apple.dock autohide -bool true
+  # Remove the auto-hide show/hide delay
+  run defaults write com.apple.dock autohide-delay -float 0
+  run defaults write com.apple.dock autohide-time-modifier -float 0.4
+  # Don't show recently used apps in Dock
+  run defaults write com.apple.dock show-recents -bool false
+  # Don't reorder Spaces based on most recent use
+  run defaults write com.apple.dock mru-spaces -bool false
+
+  # ── Screenshots ───────────────────────────────────────────────────────────
+  run defaults write com.apple.screencapture type -string "png"
+  run defaults write com.apple.screencapture disable-shadow -bool true
+
+  # ── Dialogs ───────────────────────────────────────────────────────────────
+  # Expand save and print panels by default instead of showing the compact form
+  run defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+  run defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
+  run defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
+  run defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
+
+  # ── Security ──────────────────────────────────────────────────────────────
+  # Require password immediately after sleep or screensaver begins
+  run defaults write com.apple.screensaver askForPassword -int 1
+  run defaults write com.apple.screensaver askForPasswordDelay -int 0
+
+  # Restart affected apps to apply changes
+  if ! $DRY_RUN; then
+    killall Finder
+    killall Dock
+    killall SystemUIServer 2>/dev/null || true
+  fi
+
+  ok "macOS defaults applied"
+}
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 printf "\n  dotfiles setup\n  %s\n" "${DOTFILES_DIR}"
@@ -297,6 +374,7 @@ step_git_hooks
 step_ssh_include
 step_ssh_permissions
 step_cleanup_shell
+step_macos_defaults
 
 printf "\n${DIM}── done ──────────────────────────────────────────────${RESET}\n\n"
 if ! $DRY_RUN; then

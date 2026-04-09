@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Dotfiles repo-local pre-commit hook.
+# Invoked by the global hook at ~/.config/git/hooks/pre-commit.
+
+set -euo pipefail
+
+staged() { git diff --cached --name-only --diff-filter=ACM; }
+
+# ── YAML syntax on staged workflow files ──────────────────────────────────────
+
+mapfile -t yaml_files < <(staged | grep -E '\.(yml|yaml)$' || true)
+if (( ${#yaml_files[@]} > 0 )); then
+  echo "[pre-commit] yaml syntax (${#yaml_files[@]} file(s))..."
+  for f in "${yaml_files[@]}"; do
+    if ! ruby -e "require 'yaml'; YAML.load_file('${f}')" 2>/dev/null; then
+      echo "[pre-commit] YAML syntax error in ${f} — commit blocked."
+      exit 1
+    fi
+  done
+fi
+
+# ── taplo check on staged TOML files ──────────────────────────────────────────
+
+if command -v taplo &>/dev/null; then
+  mapfile -t toml_files < <(staged | grep '\.toml$' || true)
+  if (( ${#toml_files[@]} > 0 )); then
+    echo "[pre-commit] taplo check (${#toml_files[@]} file(s))..."
+    if ! taplo check "${toml_files[@]}"; then
+      echo "[pre-commit] TOML validation failed — commit blocked."
+      exit 1
+    fi
+  fi
+fi

@@ -75,6 +75,7 @@ The script is fully idempotent — safe to re-run at any time. Each step checks 
 | **7. SSH include** | Adds `Include ~/.config/ssh/config` to `~/.ssh/config` so all SSH clients use the managed config |
 | **8. SSH permissions** | `chmod 700` on the SSH dir, `chmod 600` on all files (SSH silently ignores loose permissions) |
 | **9. Cleanup** | Removes legacy `~/.zshrc` / `~/.zshenv` (with ZDOTDIR set these are never sourced and cause confusion) |
+| **10. macOS defaults** | Applies developer-friendly system settings: fast key repeat, Finder tweaks, Dock auto-hide, screenshot format, expanded save dialogs, immediate screen-lock |
 
 To preview what the script would do without making any changes:
 
