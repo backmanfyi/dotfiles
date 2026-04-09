@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/opt/homebrew/bin/bash
 # Global pre-commit hook — runs in every repository via core.hooksPath.
 #
 # Checks (in order):

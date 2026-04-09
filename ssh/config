@@ -2,6 +2,8 @@ Host *
   IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
   ServerAliveInterval 60
   ServerAliveCountMax 3
-  AddKeysToAgent yes
+  # Explicitly no: AddKeysToAgent adds to SSH_AUTH_SOCK (macOS Keychain agent), not IdentityAgent.
+  # This caused keys to be fetched from Keychain instead of 1Password. 1Password manages its own keys.
+  AddKeysToAgent no
   StrictHostKeyChecking ask
   HashKnownHosts yes

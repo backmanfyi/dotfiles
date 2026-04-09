@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/opt/homebrew/bin/bash
 # Dotfiles repo-local pre-commit hook.
 # Invoked by the global hook at ~/.config/git/hooks/pre-commit.
 
