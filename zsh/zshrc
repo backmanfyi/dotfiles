@@ -68,6 +68,7 @@ function aws_environment {
 FPATH="/opt/homebrew/share/zsh/site-functions:${FPATH}"
 
 # zsh plugins
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#c4b8c0"
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # pyenv (lazy-loaded)
