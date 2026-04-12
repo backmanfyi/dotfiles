@@ -71,6 +71,17 @@ FPATH="/opt/homebrew/share/zsh/site-functions:${FPATH}"
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#c4b8c0"
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
+# Tab accepts autosuggestion if one is shown, otherwise normal completion
+_autosuggest_or_complete() {
+  if [[ -n $POSTDISPLAY ]]; then
+    zle autosuggest-accept
+  else
+    zle expand-or-complete
+  fi
+}
+zle -N _autosuggest_or_complete
+bindkey '\t' _autosuggest_or_complete
+
 # pyenv (lazy-loaded)
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
