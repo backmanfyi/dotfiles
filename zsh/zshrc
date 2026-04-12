@@ -14,7 +14,6 @@ zle-keymap-select () {
         echo -ne "\e[5 q"
     fi
 }
-precmd_functions+=(zle-keymap-select)
 zle -N zle-keymap-select
 
 # Reverse search

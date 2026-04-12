@@ -23,9 +23,6 @@ export PAGER='less -M'
 export VISUAL=$EDITOR
 
 # ZSH
-export ZSH_THEME="sunrise"
-export ZSH=$XDG_DATA_HOME"/oh-my-zsh"
-export ZSH_CUSTOM=$ZDOTDIR/custom
 export ZSH_CACHE_DIR=$XDG_CACHE_HOME/zsh
 export HISTFILE=$ZSH_CACHE_DIR/zhistory
 export HISTSIZE=50000
@@ -33,7 +30,6 @@ export SAVEHIST=50000
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_REDUCE_BLANKS
 setopt SHARE_HISTORY
-setopt INC_APPEND_HISTORY
 
 # SSH
 export GIT_SSH_COMMAND="/usr/bin/ssh -F ${XDG_CONFIG_HOME}/ssh/config"
@@ -65,12 +61,11 @@ export VOLTA_FEATURE_PNPM=1
 # Go
 export PATH=$PATH:$GOPATH/bin
 
-# starshop
+# starship
 export STARSHIP_CONFIG="${XDG_CONFIG_HOME}/starship/config.toml"
 export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=/opt/homebrew/share/zsh-syntax-highlighting/highlighters
 
 
-for file in ~/.lemur/cli/*.zsh; do source $file; done
 # Completions
 fpath+=($ZDOTDIR/completions)
 
