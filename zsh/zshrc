@@ -70,10 +70,10 @@ FPATH="/opt/homebrew/share/zsh/site-functions:${FPATH}"
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#c4b8c0"
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-# Tab accepts autosuggestion if one is shown, otherwise normal completion
+# Tab accepts one word of autosuggestion at a time, otherwise normal completion
 _autosuggest_or_complete() {
   if [[ -n $POSTDISPLAY ]]; then
-    zle autosuggest-accept
+    zle forward-word
   else
     zle expand-or-complete
   fi
