@@ -1,4 +1,59 @@
 {
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -q 'git push'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: Use the git-push skill for this git push. Invoke it via the Skill tool (skill name: git-push) — it handles CI monitoring, branch safety, and the full merge workflow.\"}}'; elif echo \"$cmd\" | grep -q 'gh pr create'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: Use the git-pr-create skill for PR creation. Invoke it via the Skill tool (skill name: git-pr-create) — it drafts titles, selects labels, and opens the PR following monorepo conventions.\"}}'; fi 2>/dev/null || true",
+            "statusMessage": "Checking skill requirements..."
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote:*)",
+      "Bash(git fetch:*)",
+      "Bash(git describe:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git stash list:*)",
+      "Bash(git tag:*)",
+      "Bash(git shortlog:*)",
+      "Bash(git blame:*)",
+      "Bash(git worktree list:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm ls:*)",
+      "Bash(pnpm audit:*)",
+      "Bash(pnpm outdated:*)",
+      "Bash(pnpm why:*)",
+      "Bash(pnpm info:*)",
+      "Bash(tofu plan:*)",
+      "Bash(tofu validate:*)",
+      "Bash(tofu show:*)",
+      "Bash(tofu state list:*)",
+      "Bash(tofu state show:*)",
+      "Bash(tofu output:*)",
+      "Bash(tofu version:*)",
+      "Bash(tofu providers:*)"
+    ]
+  },
   "mcpServers": {
     "github": {
       "command": "docker",
@@ -8,12 +63,12 @@
         "--rm",
         "-e",
         "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "ghcr.io/github/github-mcp-server"
+        "ghcr.io/github/github-mcp-server@sha256:d2550953f8050bc5a1c8f80d1678766f66f60bbfbcd953fdeaf661fe4269bd95"
       ]
     },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
+      "args": ["-y", "@upstash/context7-mcp@2.1.8"]
     },
     "aws": {
       "command": "uvx",
