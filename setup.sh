@@ -378,6 +378,17 @@ step_macos_defaults() {
   # every re-run. Set Custom Color #286983 (dawnfox pine) once via System
   # Settings → Appearance → Accent → Custom Color.
 
+  # ── Hotkeys ───────────────────────────────────────────────────────────────
+  # Disable Spotlight's CMD+Space binding (key 64 in symbolichotkeys.plist) so
+  # RustCast can claim it. Logout/login is required for the kernel-level hotkey
+  # daemon to pick up the change — running 'killall Dock' won't fix it.
+  if ! $DRY_RUN; then
+    /usr/libexec/PlistBuddy -c "Set :AppleSymbolicHotKeys:64:enabled false" \
+      "${HOME}/Library/Preferences/com.apple.symbolichotkeys.plist" 2>/dev/null || true
+  else
+    dry "PlistBuddy disable AppleSymbolicHotKeys:64 (Spotlight CMD+Space)"
+  fi
+
   # ── Security ──────────────────────────────────────────────────────────────
   # Require password immediately after sleep or screensaver begins
   run defaults write com.apple.screensaver askForPassword -int 1
@@ -455,6 +466,7 @@ if ! $DRY_RUN; then
   printf "  ${YELLOW}Manual follow-ups${RESET} (macOS won't let scripts do these silently):\n"
   printf "    • Grant AeroSpace Accessibility → System Settings → Privacy & Security → Accessibility\n"
   printf "    • Grant RustCast Accessibility  → System Settings → Privacy & Security → Accessibility\n"
-  printf "    • Set system accent to Pine     → System Settings → Appearance → Custom Color #286983\n\n"
+  printf "    • Set system accent to Pine     → System Settings → Appearance → Custom Color #286983\n"
+  printf "    • Logout/login                  → so disabled Spotlight CMD+Space frees up for RustCast\n\n"
   printf "  Then restart your terminal to apply all changes.\n\n"
 fi
