@@ -37,22 +37,30 @@ run() {
 
 command_exists() { command -v "$1" &>/dev/null; }
 
-# prompt_for_accessibility <app-name>: launches the app to trigger the TCC
-# prompt, opens the Accessibility settings pane, and waits for confirmation.
-# macOS TCC blocks granting Accessibility silently — interactive only.
+# prompt_for_accessibility <app-name>...: launches each app to trigger the
+# TCC prompt, opens the Accessibility settings pane once, and waits for one
+# confirmation covering all listed apps. macOS TCC blocks granting Accessibility
+# silently — interactive only.
 prompt_for_accessibility() {
-  local app_name="$1"
+  local apps_list="$*"
 
   if $DRY_RUN; then
-    dry "open -a '${app_name}' && open Accessibility settings; wait for user"
+    dry "launch ${apps_list}; open Accessibility settings; wait for user"
     return
   fi
 
-  info "Launching ${app_name} to trigger the Accessibility prompt"
-  open -a "${app_name}" 2>/dev/null || warn "Could not launch ${app_name}"
+  if [[ ! -t 0 ]]; then
+    warn "Non-interactive shell — grant Accessibility manually for: ${apps_list}"
+    return
+  fi
+
+  for app in "$@"; do
+    info "Launching ${app} to trigger the Accessibility prompt"
+    open -a "${app}" 2>/dev/null || warn "Could not launch ${app}"
+  done
   open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility" 2>/dev/null || true
 
-  printf "\n  ${YELLOW}Action needed:${RESET} enable Accessibility for ${app_name} in System Settings.\n"
+  printf "\n  ${YELLOW}Action needed:${RESET} enable Accessibility for: ${apps_list}\n"
   read -r -p "  Press enter once enabled (or Ctrl-C to skip)... " _
 }
 
@@ -81,9 +89,9 @@ done
 # 1. Ensure zsh can find ZDOTDIR on a fresh machine.
 # /etc/zshenv is the only file zsh reads before ZDOTDIR is known.
 step_zdotdir() {
-  header "1/11  ZDOTDIR bootstrap"
+  header "1/12  ZDOTDIR bootstrap"
 
-  if grep -q "ZDOTDIR" /etc/zshenv 2>/dev/null; then
+  if grep -qE "^[[:space:]]*export[[:space:]]+ZDOTDIR=" /etc/zshenv 2>/dev/null; then
     ok "ZDOTDIR already set in /etc/zshenv"
     return
   fi
@@ -100,7 +108,7 @@ step_zdotdir() {
 
 # 2. Install Homebrew if missing, then install all packages from the Brewfile.
 step_homebrew() {
-  header "2/11  Homebrew + packages"
+  header "2/12  Homebrew + packages"
 
   if ! command_exists brew; then
     info "Installing Homebrew"
@@ -116,14 +124,14 @@ step_homebrew() {
   fi
 
   info "Running brew bundle"
-  run brew bundle --file="${DOTFILES_DIR}/brew/Brewfile"
+  run brew bundle --quiet --file="${DOTFILES_DIR}/brew/Brewfile"
   ok "Packages installed"
 }
 
 # 3. Register the Homebrew-managed zsh as a valid login shell and set it as
 # the default. macOS ships an older /bin/zsh; this ensures we use the current one.
 step_shell() {
-  header "3/11  Login shell"
+  header "3/12  Login shell"
 
   if ! grep -qF "${BREW_ZSH}" /etc/shells 2>/dev/null; then
     info "Adding ${BREW_ZSH} to /etc/shells"
@@ -148,7 +156,7 @@ step_shell() {
 
 # 4. Create symlinks from ~/.config/* to the dotfiles repo.
 step_symlinks() {
-  header "4/11  Config symlinks"
+  header "4/12  Config symlinks"
 
   local zdotdir="${CONFIG_DIR}/zsh"
   run mkdir -p "${zdotdir}"
@@ -158,7 +166,7 @@ step_symlinks() {
   _link "${DOTFILES_DIR}/zsh/zshenv" "${zdotdir}/.zshenv"
 
   # Tools
-  local -a configs=("aerospace" "bat" "ghostty" "git" "nvim" "ssh" "starship" "tmux")
+  local -a configs=("aerospace" "bat" "ghostty" "git" "nvim" "sol" "ssh" "starship" "tmux")
   for config in "${configs[@]}"; do
     _link "${DOTFILES_DIR}/${config}" "${CONFIG_DIR}/${config}"
   done
@@ -179,7 +187,6 @@ _link() {
     local current
     current="$(readlink "${dst}")"
     if [[ "${current}" == "${src}" ]]; then
-      info "Already linked: $(basename "${dst}")"
       return
     fi
     warn "$(basename "${dst}") points to ${current} (expected ${src}) — skipping"
@@ -199,12 +206,12 @@ _link() {
 # ~/.claude/ is not an XDG dir so these are linked individually rather than
 # symlinking the whole directory (which contains runtime state we don't track).
 step_claude() {
-  header "5/11  Claude Code config"
+  header "5/12  Claude Code config"
 
   local claude_src="${DOTFILES_DIR}/claude"
   local claude_dst="${HOME}/.claude"
 
-  run mkdir -p "${claude_dst}/agents"
+  run mkdir -p "${claude_dst}"
 
   _link "${claude_src}/CLAUDE.md"    "${claude_dst}/CLAUDE.md"
   _link "${claude_src}/settings.json" "${claude_dst}/settings.json"
@@ -217,7 +224,7 @@ step_claude() {
 # Also makes .githooks/ executable — these are repo-local hooks chained
 # from the global hook and must be executable to be invoked.
 step_git_hooks() {
-  header "6/11  Git hooks"
+  header "6/12  Git hooks"
 
   local -a hook_dirs=("${DOTFILES_DIR}/git/hooks" "${DOTFILES_DIR}/.githooks")
 
@@ -237,14 +244,14 @@ step_git_hooks() {
 # and use Include to pull in the managed config from the dotfiles repo.
 # OrbStack's Include must stay first (it adds Host blocks before any Match/Host).
 step_ssh_include() {
-  header "7/11  SSH include"
+  header "7/12  SSH include"
 
   local system_ssh="${HOME}/.ssh/config"
   local managed_include="Include ~/.config/ssh/config"
 
   run mkdir -p "${HOME}/.ssh"
 
-  if [[ -f "${system_ssh}" ]] && grep -qF "~/.config/ssh/config" "${system_ssh}" 2>/dev/null; then
+  if [[ -f "${system_ssh}" ]] && grep -qE "^[[:space:]]*Include[[:space:]]+~/.config/ssh/config" "${system_ssh}" 2>/dev/null; then
     ok "~/.ssh/config already includes managed config"
     return
   fi
@@ -262,7 +269,7 @@ step_ssh_include() {
 # 8. SSH is strict about config file permissions and silently ignores configs
 # with group/world read access.
 step_ssh_permissions() {
-  header "8/11  SSH permissions"
+  header "8/12  SSH permissions"
 
   local ssh_link="${CONFIG_DIR}/ssh"
   if [[ ! -e "${ssh_link}" ]]; then
@@ -284,7 +291,7 @@ step_ssh_permissions() {
 # With ZDOTDIR set, ~/.zshrc is never sourced — it only causes confusion.
 # ~/.bashrc and ~/.bash_profile are left alone (may be used by scripts/tools).
 step_cleanup_shell() {
-  header "9/11  Clean up legacy shell files"
+  header "9/12  Clean up legacy shell files"
 
   local -a legacy=("${HOME}/.zshrc" "${HOME}/.zshenv")
   local removed=0
@@ -308,7 +315,7 @@ step_cleanup_shell() {
 # All settings are idempotent — safe to re-run. Affected apps are restarted
 # at the end to pick up the new values.
 step_macos_defaults() {
-  header "10/11  macOS defaults"
+  header "10/12  macOS defaults"
 
   # ── Keyboard ──────────────────────────────────────────────────────────────
   # Faster key repeat — essential for vim and terminal work.
@@ -364,34 +371,66 @@ step_macos_defaults() {
   run defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
   run defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
 
+  # ── Appearance ────────────────────────────────────────────────────────────
+  # Pink accent — closest macOS preset to the dawnfox rose (#b4637a) used
+  # across the terminal stack. Picked up by Sol launcher and other apps that
+  # read the system accent live. Values: -1=Graphite, 0=Red, 1=Orange,
+  # 2=Yellow, 3=Green, 4=Blue (default), 5=Purple, 6=Pink.
+  run defaults write NSGlobalDomain AppleAccentColor -int 6
+  run defaults write NSGlobalDomain AppleHighlightColor -string "1.000000 0.749020 0.823529 Pink"
+
   # ── Security ──────────────────────────────────────────────────────────────
   # Require password immediately after sleep or screensaver begins
   run defaults write com.apple.screensaver askForPassword -int 1
   run defaults write com.apple.screensaver askForPasswordDelay -int 0
 
-  # Restart affected apps to apply changes
-  if ! $DRY_RUN; then
-    killall Finder
-    killall Dock
-    killall SystemUIServer 2>/dev/null || true
-  fi
+  # Restart affected apps to apply changes (no-op if process isn't running)
+  run killall Finder 2>/dev/null || true
+  run killall Dock 2>/dev/null || true
+  run killall SystemUIServer 2>/dev/null || true
 
   ok "macOS defaults applied"
 }
 
-# 11. AeroSpace needs Accessibility permission to manage windows. macOS TCC
-# requires the user to grant this through System Settings — we can launch the
-# app and open the right pane, but the toggle itself is manual.
+# 11. Reload AeroSpace's config so symlink updates take effect without a
+# restart. Accessibility is granted later in step_app_accessibility (12/12),
+# consolidated with Sol to avoid two trips through System Settings.
 step_aerospace() {
-  header "11/11  AeroSpace launch + Accessibility"
+  header "11/12  AeroSpace"
 
   if [[ ! -d "/Applications/AeroSpace.app" ]]; then
     warn "AeroSpace not installed — skipping"
     return
   fi
 
-  prompt_for_accessibility "AeroSpace"
+  if command_exists aerospace && pgrep -x AeroSpace >/dev/null 2>&1; then
+    info "Reloading AeroSpace config"
+    run aerospace reload-config || warn "Reload failed — check config syntax"
+  else
+    info "AeroSpace not running — config will load on next launch"
+  fi
+
   ok "AeroSpace ready"
+}
+
+# 12. Both AeroSpace and Sol need Accessibility for window management /
+# global hotkeys / app discovery. macOS TCC requires the user to flip the
+# toggle in System Settings — interactive only. We open the pane once and
+# prompt once, covering whichever apps are installed.
+step_app_accessibility() {
+  header "12/12  Application Accessibility"
+
+  local -a apps=()
+  [[ -d "/Applications/AeroSpace.app" ]] && apps+=("AeroSpace")
+  [[ -d "/Applications/Sol.app" ]]      && apps+=("Sol")
+
+  if (( ${#apps[@]} == 0 )); then
+    warn "No apps requiring Accessibility installed — skipping"
+    return
+  fi
+
+  prompt_for_accessibility "${apps[@]}"
+  ok "Accessibility prompts complete"
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -410,8 +449,13 @@ step_ssh_permissions
 step_cleanup_shell
 step_macos_defaults
 step_aerospace
+step_app_accessibility
 
 printf "\n${DIM}── done ──────────────────────────────────────────────${RESET}\n\n"
 if ! $DRY_RUN; then
-  printf "  Restart your terminal to apply all changes.\n\n"
+  printf "  ${YELLOW}Manual follow-ups${RESET} (macOS won't let scripts do these silently):\n"
+  printf "    • Grant AeroSpace Accessibility → System Settings → Privacy & Security → Accessibility\n"
+  printf "    • Grant Sol Accessibility       → System Settings → Privacy & Security → Accessibility\n"
+  printf "    • Bind Sol's global hotkey      → Sol → Settings → General → Global Shortcut\n\n"
+  printf "  Then restart your terminal to apply all changes.\n\n"
 fi

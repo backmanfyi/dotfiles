@@ -9,7 +9,7 @@ font-family-bold-italic = "SauceCodePro NFM SemiBold Italic"
 font-size = 12
 
 # Window configuration
-window-decoration = false
+window-decoration = true
 mouse-shift-capture = true
 macos-titlebar-style = hidden
 macos-window-shadow = false

@@ -1,0 +1,8 @@
+{
+  "scratchPadColor": "ORANGE",
+  "searchEngine": "duckduckgo",
+  "showWindowOn": "screenWithCursor",
+  "launchAtLogin": true,
+  "showInAppBrowserBookMarks": true,
+  "calendarEnabled": false
+}
