@@ -1,1 +1,4 @@
 git/login.ini
+
+# Claude Code per-project state (machine-local: settings.local.json, worktrees/)
+.claude/
