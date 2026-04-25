@@ -77,7 +77,7 @@ The script is fully idempotent — safe to re-run at any time. Each step checks 
 | **7. SSH include** | Adds `Include ~/.config/ssh/config` to `~/.ssh/config` so all SSH clients use the managed config |
 | **8. SSH permissions** | `chmod 700` on the SSH dir, `chmod 600` on all files (SSH silently ignores loose permissions) |
 | **9. Cleanup** | Removes legacy `~/.zshrc` / `~/.zshenv` (with ZDOTDIR set these are never sourced and cause confusion) |
-| **10. macOS defaults** | Applies developer-friendly system settings: fast key repeat, Finder tweaks, Dock auto-hide, screenshot format, expanded save dialogs, immediate screen-lock, system accent set to Pink (closest match to the dawnfox terminal palette) |
+| **10. macOS defaults** | Applies developer-friendly system settings: fast key repeat, Finder tweaks, Dock auto-hide, screenshot format, expanded save dialogs, immediate screen-lock |
 | **11. AeroSpace** | Reloads AeroSpace's config (symlink updates take effect without a restart) |
 | **12. Application Accessibility** | Launches AeroSpace and Sol, opens System Settings → Privacy → Accessibility once, and waits for a single confirmation covering both apps |
 
@@ -90,6 +90,7 @@ A few things macOS won't let scripts do silently. setup.sh prompts at the right 
 | Grant **AeroSpace** Accessibility | TCC requires a human toggle to allow window management | System Settings → Privacy & Security → Accessibility |
 | Grant **Sol** Accessibility | Same TCC requirement for global hotkeys + app discovery | System Settings → Privacy & Security → Accessibility |
 | Bind **Sol's** global hotkey | Sol opens a settings window on first launch — pick a hotkey that doesn't collide with Spotlight (e.g. `⌥ Space`) | Sol → Settings → General → Global Shortcut |
+| Set **system accent** to dawnfox pine | macOS won't let `defaults write` set a Custom Color hex; preset accents (Pink, Purple, etc.) all clash with the cream terminal palette | System Settings → Appearance → Accent → Custom Color → `#286983` |
 
 To preview what the script would do without making any changes:
 
