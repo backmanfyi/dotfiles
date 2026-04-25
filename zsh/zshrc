@@ -104,11 +104,11 @@ alias j='z'
 eval "$(direnv hook zsh)"
 eval "$(atuin init zsh --disable-up-arrow)"
 
-source "${ZDOTDIR}/.zshrc_local"
+[[ -f "${ZDOTDIR}/.zshrc_local" ]] && source "${ZDOTDIR}/.zshrc_local"
 eval "$(starship init zsh)"
 export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
 
-. "$HOME/.local/share/../bin/env"
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
 source ~/.safe-chain/scripts/init-posix.sh # Safe-chain Zsh initialization script
 
 # zsh-syntax-highlighting must be sourced last

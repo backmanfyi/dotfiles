@@ -37,6 +37,25 @@ run() {
 
 command_exists() { command -v "$1" &>/dev/null; }
 
+# prompt_for_accessibility <app-name>: launches the app to trigger the TCC
+# prompt, opens the Accessibility settings pane, and waits for confirmation.
+# macOS TCC blocks granting Accessibility silently — interactive only.
+prompt_for_accessibility() {
+  local app_name="$1"
+
+  if $DRY_RUN; then
+    dry "open -a '${app_name}' && open Accessibility settings; wait for user"
+    return
+  fi
+
+  info "Launching ${app_name} to trigger the Accessibility prompt"
+  open -a "${app_name}" 2>/dev/null || warn "Could not launch ${app_name}"
+  open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility" 2>/dev/null || true
+
+  printf "\n  ${YELLOW}Action needed:${RESET} enable Accessibility for ${app_name} in System Settings.\n"
+  read -r -p "  Press enter once enabled (or Ctrl-C to skip)... " _
+}
+
 # ── Argument parsing ──────────────────────────────────────────────────────────
 
 usage() {
@@ -62,7 +81,7 @@ done
 # 1. Ensure zsh can find ZDOTDIR on a fresh machine.
 # /etc/zshenv is the only file zsh reads before ZDOTDIR is known.
 step_zdotdir() {
-  header "1/10  ZDOTDIR bootstrap"
+  header "1/11  ZDOTDIR bootstrap"
 
   if grep -q "ZDOTDIR" /etc/zshenv 2>/dev/null; then
     ok "ZDOTDIR already set in /etc/zshenv"
@@ -81,7 +100,7 @@ step_zdotdir() {
 
 # 2. Install Homebrew if missing, then install all packages from the Brewfile.
 step_homebrew() {
-  header "2/10  Homebrew + packages"
+  header "2/11  Homebrew + packages"
 
   if ! command_exists brew; then
     info "Installing Homebrew"
@@ -104,7 +123,7 @@ step_homebrew() {
 # 3. Register the Homebrew-managed zsh as a valid login shell and set it as
 # the default. macOS ships an older /bin/zsh; this ensures we use the current one.
 step_shell() {
-  header "3/10  Login shell"
+  header "3/11  Login shell"
 
   if ! grep -qF "${BREW_ZSH}" /etc/shells 2>/dev/null; then
     info "Adding ${BREW_ZSH} to /etc/shells"
@@ -129,7 +148,7 @@ step_shell() {
 
 # 4. Create symlinks from ~/.config/* to the dotfiles repo.
 step_symlinks() {
-  header "4/10  Config symlinks"
+  header "4/11  Config symlinks"
 
   local zdotdir="${CONFIG_DIR}/zsh"
   run mkdir -p "${zdotdir}"
@@ -139,7 +158,7 @@ step_symlinks() {
   _link "${DOTFILES_DIR}/zsh/zshenv" "${zdotdir}/.zshenv"
 
   # Tools
-  local -a configs=("bat" "ghostty" "git" "nvim" "ssh" "starship" "tmux")
+  local -a configs=("aerospace" "bat" "ghostty" "git" "nvim" "ssh" "starship" "tmux")
   for config in "${configs[@]}"; do
     _link "${DOTFILES_DIR}/${config}" "${CONFIG_DIR}/${config}"
   done
@@ -180,7 +199,7 @@ _link() {
 # ~/.claude/ is not an XDG dir so these are linked individually rather than
 # symlinking the whole directory (which contains runtime state we don't track).
 step_claude() {
-  header "5/10  Claude Code config"
+  header "5/11  Claude Code config"
 
   local claude_src="${DOTFILES_DIR}/claude"
   local claude_dst="${HOME}/.claude"
@@ -198,7 +217,7 @@ step_claude() {
 # Also makes .githooks/ executable — these are repo-local hooks chained
 # from the global hook and must be executable to be invoked.
 step_git_hooks() {
-  header "6/10  Git hooks"
+  header "6/11  Git hooks"
 
   local -a hook_dirs=("${DOTFILES_DIR}/git/hooks" "${DOTFILES_DIR}/.githooks")
 
@@ -218,7 +237,7 @@ step_git_hooks() {
 # and use Include to pull in the managed config from the dotfiles repo.
 # OrbStack's Include must stay first (it adds Host blocks before any Match/Host).
 step_ssh_include() {
-  header "7/10  SSH include"
+  header "7/11  SSH include"
 
   local system_ssh="${HOME}/.ssh/config"
   local managed_include="Include ~/.config/ssh/config"
@@ -243,7 +262,7 @@ step_ssh_include() {
 # 8. SSH is strict about config file permissions and silently ignores configs
 # with group/world read access.
 step_ssh_permissions() {
-  header "8/10  SSH permissions"
+  header "8/11  SSH permissions"
 
   local ssh_link="${CONFIG_DIR}/ssh"
   if [[ ! -e "${ssh_link}" ]]; then
@@ -265,7 +284,7 @@ step_ssh_permissions() {
 # With ZDOTDIR set, ~/.zshrc is never sourced — it only causes confusion.
 # ~/.bashrc and ~/.bash_profile are left alone (may be used by scripts/tools).
 step_cleanup_shell() {
-  header "9/10  Clean up legacy shell files"
+  header "9/11  Clean up legacy shell files"
 
   local -a legacy=("${HOME}/.zshrc" "${HOME}/.zshenv")
   local removed=0
@@ -289,7 +308,7 @@ step_cleanup_shell() {
 # All settings are idempotent — safe to re-run. Affected apps are restarted
 # at the end to pick up the new values.
 step_macos_defaults() {
-  header "10/10  macOS defaults"
+  header "10/11  macOS defaults"
 
   # ── Keyboard ──────────────────────────────────────────────────────────────
   # Faster key repeat — essential for vim and terminal work.
@@ -360,6 +379,21 @@ step_macos_defaults() {
   ok "macOS defaults applied"
 }
 
+# 11. AeroSpace needs Accessibility permission to manage windows. macOS TCC
+# requires the user to grant this through System Settings — we can launch the
+# app and open the right pane, but the toggle itself is manual.
+step_aerospace() {
+  header "11/11  AeroSpace launch + Accessibility"
+
+  if [[ ! -d "/Applications/AeroSpace.app" ]]; then
+    warn "AeroSpace not installed — skipping"
+    return
+  fi
+
+  prompt_for_accessibility "AeroSpace"
+  ok "AeroSpace ready"
+}
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 printf "\n  dotfiles setup\n  %s\n" "${DOTFILES_DIR}"
@@ -375,6 +409,7 @@ step_ssh_include
 step_ssh_permissions
 step_cleanup_shell
 step_macos_defaults
+step_aerospace
 
 printf "\n${DIM}── done ──────────────────────────────────────────────${RESET}\n\n"
 if ! $DRY_RUN; then
