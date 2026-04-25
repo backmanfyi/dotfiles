@@ -372,12 +372,11 @@ step_macos_defaults() {
   run defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
 
   # ── Appearance ────────────────────────────────────────────────────────────
-  # Pink accent — closest macOS preset to the dawnfox rose (#b4637a) used
-  # across the terminal stack. Picked up by Sol launcher and other apps that
-  # read the system accent live. Values: -1=Graphite, 0=Red, 1=Orange,
-  # 2=Yellow, 3=Green, 4=Blue (default), 5=Purple, 6=Pink.
-  run defaults write NSGlobalDomain AppleAccentColor -int 6
-  run defaults write NSGlobalDomain AppleHighlightColor -string "1.000000 0.749020 0.823529 Pink"
+  # Accent + highlight are NOT set here. macOS doesn't expose a clean defaults
+  # key for the Tahoe Custom Color picker (the hex lives in encoded form), and
+  # writing AppleAccentColor would clobber a manually-picked Custom Color on
+  # every re-run. Set Custom Color #286983 (dawnfox pine) once via System
+  # Settings → Appearance → Accent → Custom Color.
 
   # ── Security ──────────────────────────────────────────────────────────────
   # Require password immediately after sleep or screensaver begins
@@ -456,6 +455,7 @@ if ! $DRY_RUN; then
   printf "  ${YELLOW}Manual follow-ups${RESET} (macOS won't let scripts do these silently):\n"
   printf "    • Grant AeroSpace Accessibility → System Settings → Privacy & Security → Accessibility\n"
   printf "    • Grant Sol Accessibility       → System Settings → Privacy & Security → Accessibility\n"
-  printf "    • Bind Sol's global hotkey      → Sol → Settings → General → Global Shortcut\n\n"
+  printf "    • Bind Sol's global hotkey      → Sol → Settings → General → Global Shortcut\n"
+  printf "    • Set system accent to Pine     → System Settings → Appearance → Custom Color #286983\n\n"
   printf "  Then restart your terminal to apply all changes.\n\n"
 fi
