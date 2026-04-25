@@ -166,7 +166,7 @@ step_symlinks() {
   _link "${DOTFILES_DIR}/zsh/zshenv" "${zdotdir}/.zshenv"
 
   # Tools
-  local -a configs=("aerospace" "bat" "ghostty" "git" "nvim" "sol" "ssh" "starship" "tmux")
+  local -a configs=("aerospace" "bat" "ghostty" "git" "nvim" "rustcast" "ssh" "starship" "tmux")
   for config in "${configs[@]}"; do
     _link "${DOTFILES_DIR}/${config}" "${CONFIG_DIR}/${config}"
   done
@@ -412,7 +412,7 @@ step_aerospace() {
   ok "AeroSpace ready"
 }
 
-# 12. Both AeroSpace and Sol need Accessibility for window management /
+# 12. Both AeroSpace and RustCast need Accessibility for window management /
 # global hotkeys / app discovery. macOS TCC requires the user to flip the
 # toggle in System Settings — interactive only. We open the pane once and
 # prompt once, covering whichever apps are installed.
@@ -421,7 +421,7 @@ step_app_accessibility() {
 
   local -a apps=()
   [[ -d "/Applications/AeroSpace.app" ]] && apps+=("AeroSpace")
-  [[ -d "/Applications/Sol.app" ]]      && apps+=("Sol")
+  [[ -d "/Applications/RustCast.app" ]]  && apps+=("RustCast")
 
   if (( ${#apps[@]} == 0 )); then
     warn "No apps requiring Accessibility installed — skipping"
@@ -454,8 +454,7 @@ printf "\n${DIM}── done ─────────────────�
 if ! $DRY_RUN; then
   printf "  ${YELLOW}Manual follow-ups${RESET} (macOS won't let scripts do these silently):\n"
   printf "    • Grant AeroSpace Accessibility → System Settings → Privacy & Security → Accessibility\n"
-  printf "    • Grant Sol Accessibility       → System Settings → Privacy & Security → Accessibility\n"
-  printf "    • Bind Sol's global hotkey      → Sol → Settings → General → Global Shortcut\n"
+  printf "    • Grant RustCast Accessibility  → System Settings → Privacy & Security → Accessibility\n"
   printf "    • Set system accent to Pine     → System Settings → Appearance → Custom Color #286983\n\n"
   printf "  Then restart your terminal to apply all changes.\n\n"
 fi
