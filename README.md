@@ -90,6 +90,7 @@ A few things macOS won't let scripts do silently. setup.sh prompts at the right 
 | Grant **AeroSpace** Accessibility | TCC requires a human toggle to allow window management | System Settings → Privacy & Security → Accessibility |
 | Grant **RustCast** Accessibility | Same TCC requirement for global hotkeys + app discovery | System Settings → Privacy & Security → Accessibility |
 | Set **system accent** to dawnfox pine | macOS won't let `defaults write` set a Custom Color hex; preset accents (Pink, Purple, etc.) all clash with the cream terminal palette | System Settings → Appearance → Accent → Custom Color → `#286983` |
+| **Logout/login** after first run | Disabling Spotlight's `⌘ Space` (so RustCast can claim it) requires the macOS hotkey daemon to reload — only happens at login | Apple menu → Log Out |
 
 To preview what the script would do without making any changes:
 

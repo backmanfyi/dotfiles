@@ -1,6 +1,6 @@
-# Toggle hotkey — ALT+SPACE matches the launcher convention on macOS without
-# colliding with Spotlight (CMD+SPACE). RustCast normalises ALT == OPTION.
-toggle_hotkey = "ALT+SPACE"
+# Toggle hotkey — CMD+SPACE (Spotlight's slot). step_macos_defaults disables
+# Spotlight's binding so RustCast can claim it. RustCast spells CMD as SUPER.
+toggle_hotkey = "SUPER+SPACE"
 
 placeholder = "Search apps, files, ?web"
 
@@ -27,7 +27,6 @@ text_color       = [0.341, 0.322, 0.475]
 # bg #faf4ed cream   → 250/244/237
 background_color = [0.980, 0.957, 0.929]
 
-background_opacity = 1.0
 blur = false
 show_icons = true
 show_scroll_bar = true
