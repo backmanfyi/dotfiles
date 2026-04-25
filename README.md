@@ -33,7 +33,6 @@ Personal macOS developer environment for platform and infrastructure engineering
 | `tmux/` | tmux | Terminal multiplexer |
 | `ghostty/` | Ghostty | Terminal emulator |
 | `aerospace/` | AeroSpace | Tiling window manager |
-| `rustcast/` | RustCast | Rust-native application launcher |
 | `git/` | git | Version control, signing, aliases |
 | `starship/` | Starship | Shell prompt |
 | `ssh/` | SSH | Client config, 1Password agent |
@@ -71,7 +70,7 @@ The script is fully idempotent — safe to re-run at any time. Each step checks 
 | **1. ZDOTDIR bootstrap** | Writes `ZDOTDIR=~/.config/zsh` to `/etc/zshenv` so zsh finds your config on a fresh machine |
 | **2. Homebrew** | Installs Homebrew if missing, then runs `brew bundle` from the Brewfile |
 | **3. Login shell** | Registers `/opt/homebrew/bin/zsh` in `/etc/shells` and sets it as your default shell |
-| **4. Symlinks** | Creates `~/.config/{aerospace,bat,ghostty,git,nvim,rustcast,ssh,starship,tmux}` → dotfiles repo |
+| **4. Symlinks** | Creates `~/.config/{aerospace,bat,ghostty,git,nvim,ssh,starship,tmux}` → dotfiles repo |
 | **5. Claude Code** | Links `~/.claude/CLAUDE.md`, `settings.json`, and `agents/` → dotfiles repo |
 | **6. Git hooks** | `chmod +x` on all files in `git/hooks/` |
 | **7. SSH include** | Adds `Include ~/.config/ssh/config` to `~/.ssh/config` so all SSH clients use the managed config |
@@ -79,7 +78,7 @@ The script is fully idempotent — safe to re-run at any time. Each step checks 
 | **9. Cleanup** | Removes legacy `~/.zshrc` / `~/.zshenv` (with ZDOTDIR set these are never sourced and cause confusion) |
 | **10. macOS defaults** | Applies developer-friendly system settings: fast key repeat, Finder tweaks, Dock auto-hide, screenshot format, expanded save dialogs, immediate screen-lock |
 | **11. AeroSpace** | Reloads AeroSpace's config (symlink updates take effect without a restart) |
-| **12. Application Accessibility** | Launches AeroSpace and RustCast, opens System Settings → Privacy → Accessibility once, and waits for a single confirmation covering both apps |
+| **12. Application Accessibility** | Launches AeroSpace, opens System Settings → Privacy → Accessibility, and waits for confirmation |
 
 ### Manual follow-ups
 
@@ -88,9 +87,7 @@ A few things macOS won't let scripts do silently. setup.sh prompts at the right 
 | What | Why | Where |
 |---|---|---|
 | Grant **AeroSpace** Accessibility | TCC requires a human toggle to allow window management | System Settings → Privacy & Security → Accessibility |
-| Grant **RustCast** Accessibility | Same TCC requirement for global hotkeys + app discovery | System Settings → Privacy & Security → Accessibility |
 | Set **system accent** to dawnfox pine | macOS won't let `defaults write` set a Custom Color hex; preset accents (Pink, Purple, etc.) all clash with the cream terminal palette | System Settings → Appearance → Accent → Custom Color → `#286983` |
-| **Logout/login** after first run | Disabling Spotlight's `⌘ Space` (so RustCast can claim it) requires the macOS hotkey daemon to reload — only happens at login | Apple menu → Log Out |
 
 To preview what the script would do without making any changes:
 
