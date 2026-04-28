@@ -1,3 +1,10 @@
+# callbackd Scaleway VM
+Host callbackd 51.15.229.42
+  HostName 51.15.229.42
+  User root
+  IdentityFile ~/.config/ssh/scaleway.pub
+  IdentitiesOnly yes
+
 Host *
   IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
   ServerAliveInterval 60

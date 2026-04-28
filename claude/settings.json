@@ -54,7 +54,6 @@
       }
     ]
   },
-  "skipDangerousModePermissionPrompt": true,
   "mcpServers": {
     "github": {
       "command": "docker",
