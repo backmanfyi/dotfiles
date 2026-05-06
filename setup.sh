@@ -216,6 +216,15 @@ step_claude() {
   _link "${claude_src}/CLAUDE.md"    "${claude_dst}/CLAUDE.md"
   _link "${claude_src}/settings.json" "${claude_dst}/settings.json"
   _link "${claude_src}/agents"        "${claude_dst}/agents"
+  _link "${claude_src}/hooks"         "${claude_dst}/hooks"
+  _link "${claude_src}/skills"        "${claude_dst}/skills"
+
+  # User-level hooks must be executable for Claude Code to invoke them.
+  if [[ -d "${claude_src}/hooks" ]]; then
+    while IFS= read -r -d '' hook; do
+      run chmod +x "${hook}"
+    done < <(find "${claude_src}/hooks" -type f -print0)
+  fi
 
   ok "Claude Code config linked"
 }

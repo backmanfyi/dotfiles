@@ -51,6 +51,15 @@
             "statusMessage": "Checking skill requirements..."
           }
         ]
+      },
+      {
+        "matcher": "mcp__fastmail__send_email|mcp__fastmail__send_draft|mcp__fastmail__reply_email|mcp__fastmail__delete_email|mcp__fastmail__bulk_delete|mcp__claude_ai_Slack__slack_send_message|mcp__claude_ai_Slack__slack_send_message_draft|mcp__claude_ai_Slack__slack_schedule_message|mcp__claude_ai_Slack__slack_create_canvas|mcp__claude_ai_Slack__slack_update_canvas",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/outbound-write-warn.sh"
+          }
+        ]
       }
     ]
   },
@@ -101,5 +110,6 @@
         "ALLOW_ONLY_NON_DESTRUCTIVE_TOOLS": "true"
       }
     }
-  }
+  },
+  "theme": "light"
 }
