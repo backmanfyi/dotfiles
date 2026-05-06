@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -q 'git push'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: Use the git-push skill for this git push. Invoke it via the Skill tool (skill name: git-push) — it handles CI monitoring, branch safety, and the full merge workflow.\"}}'; elif echo \"$cmd\" | grep -q 'gh pr create'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: Use the git-pr-create skill for PR creation. Invoke it via the Skill tool (skill name: git-pr-create) — it drafts titles, selects labels, and opens the PR following monorepo conventions.\"}}'; fi 2>/dev/null || true",
+            "command": "bash ~/.claude/hooks/skill-reminder.sh",
             "statusMessage": "Checking skill requirements..."
           }
         ]
