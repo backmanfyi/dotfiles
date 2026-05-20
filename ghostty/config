@@ -17,8 +17,20 @@ macos-window-shadow = false
 # clickable links
 link-url = true
 
-# Styling 
+# Styling
 bold-is-bright = true
+
+# Browser-style font zoom: change size and notify tmux via a private CSI
+# sequence so the status bar can mirror the current font size.
+# CSI final byte `z` is unassigned; `>` is a private parameter byte.
+keybind = super+==increase_font_size:1
+keybind = chain=csi:>1z
+keybind = super++=increase_font_size:1
+keybind = chain=csi:>1z
+keybind = super+-=decrease_font_size:1
+keybind = chain=csi:>2z
+keybind = super+0=reset_font_size
+keybind = chain=csi:>0z
 
 # Coloring
 background = #faf4ed
