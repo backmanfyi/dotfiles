@@ -9,6 +9,7 @@ CONFIG_DIR="${HOME}/.config"
 BREW_ZSH="/opt/homebrew/bin/zsh"
 
 DRY_RUN=false
+FORCE=false
 
 # ── Output helpers ────────────────────────────────────────────────────────────
 
@@ -72,6 +73,8 @@ Usage: $(basename "$0") [options]
 
 Options:
   --dry-run   Show what would be done without making any changes
+  --force     Back up and replace any non-symlink dotfile destinations
+              (renames the existing path to <dst>.bak.<timestamp>)
   --help      Show this help
 EOF
 }
@@ -79,6 +82,7 @@ EOF
 for arg in "$@"; do
   case $arg in
     --dry-run) DRY_RUN=true ;;
+    --force)   FORCE=true ;;
     --help)    usage; exit 0 ;;
     *)         die "Unknown argument: ${arg}" ;;
   esac
@@ -194,8 +198,15 @@ _link() {
   fi
 
   if [[ -e "${dst}" ]]; then
-    warn "${dst} exists and is not a symlink — skipping"
-    return
+    if $FORCE; then
+      local backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
+      warn "${dst} exists and is not a symlink — backing up to ${backup}"
+      run mv "${dst}" "${backup}"
+    else
+      warn "${dst} exists and is not a symlink — NOT linked"
+      warn "   fix: rerun with --force, or remove ${dst} manually and rerun"
+      return
+    fi
   fi
 
   info "Linking $(basename "${dst}")"
