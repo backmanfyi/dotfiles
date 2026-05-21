@@ -1,0 +1,11 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+if grep -qE '^[[:space:]]*export[[:space:]]+ZDOTDIR=' /etc/zshenv 2>/dev/null; then
+  exit 0
+fi
+
+printf '\nexport XDG_CONFIG_HOME="$HOME/.config"\nexport ZDOTDIR="${XDG_CONFIG_HOME}/zsh"\n' \
+  | sudo tee -a /etc/zshenv > /dev/null
+{{ end -}}

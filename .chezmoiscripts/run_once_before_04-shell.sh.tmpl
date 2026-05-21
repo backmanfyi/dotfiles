@@ -1,0 +1,13 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+BREW_ZSH="/opt/homebrew/bin/zsh"
+
+if ! grep -qF "${BREW_ZSH}" /etc/shells 2>/dev/null; then
+  echo "${BREW_ZSH}" | sudo tee -a /etc/shells > /dev/null
+fi
+
+if [[ "${SHELL:-}" != "${BREW_ZSH}" ]]; then
+  chsh -s "${BREW_ZSH}"
+fi
+{{ end -}}

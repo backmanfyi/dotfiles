@@ -1,0 +1,19 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Ensure ~/.ssh/config includes the managed config from ~/.config/ssh/config.
+# The system ~/.ssh/config stays user-owned (untouched by chezmoi) because
+# other tools (OrbStack, etc.) also write to it.
+set -euo pipefail
+
+SYSTEM_SSH="${HOME}/.ssh/config"
+MANAGED_INCLUDE="Include ~/.config/ssh/config"
+
+mkdir -p "${HOME}/.ssh"
+
+if [[ -f "${SYSTEM_SSH}" ]] && grep -qE '^[[:space:]]*Include[[:space:]]+~/.config/ssh/config' "${SYSTEM_SSH}"; then
+  exit 0
+fi
+
+printf '\n# Managed dotfiles config — edit at ~/.config/dotfiles\n%s\n' "${MANAGED_INCLUDE}" >> "${SYSTEM_SSH}"
+chmod 600 "${SYSTEM_SSH}"
+{{ end -}}

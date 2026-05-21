@@ -1,0 +1,13 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Aerospace config hash: {{ include "dot_config/aerospace/aerospace.toml" | sha256sum }}
+set -euo pipefail
+
+if [[ ! -d /Applications/AeroSpace.app ]]; then
+  exit 0
+fi
+
+if command -v aerospace >/dev/null 2>&1 && pgrep -x AeroSpace >/dev/null 2>&1; then
+  aerospace reload-config || true
+fi
+{{ end -}}

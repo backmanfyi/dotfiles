@@ -186,12 +186,12 @@ Mapped to chezmoi destinations:
 | 5. Claude Code config | **chezmoi itself**, via `dot_claude/...` source layout |
 | 5. `chmod +x` on Claude hooks | git already tracks them as mode 100755; symlink-mode deploy inherits +x via the symlink → source file |
 | 6. Git hooks `chmod +x` | Same — git mode bits preserved through symlink |
-| 7. SSH `Include` line in `~/.ssh/config` | `.chezmoiscripts/run_once_after_05-ssh-include.sh.tmpl` |
+| 7. SSH `Include` line in `~/.ssh/config` | `.chezmoiscripts/run_once_after_01-ssh-include.sh.tmpl` |
 | 8. SSH permissions (700 dir) | `dot_config/private_ssh/` — `private_` on the dir gives mode 0700; file inside is a symlink with no per-file prefix |
-| 9. Remove legacy `~/.zshrc` / `~/.zshenv` | `.chezmoiscripts/run_once_before_06-cleanup-legacy.sh` |
-| 10. macOS defaults | `.chezmoiscripts/run_onchange_07-macos-defaults.sh.tmpl` (darwin-only, re-runs when contents change) |
-| 11. AeroSpace reload | `.chezmoiscripts/run_onchange_after_08-aerospace-reload.sh.tmpl` |
-| 12. Accessibility prompts | `.chezmoiscripts/run_once_after_09-accessibility.sh.tmpl` (interactive, preserves prompt-and-wait behaviour) |
+| 9. Remove legacy `~/.zshrc` / `~/.zshenv` | `.chezmoiscripts/run_once_before_05-cleanup-legacy.sh` |
+| 10. macOS defaults | `.chezmoiscripts/run_onchange_after_02-macos-defaults.sh.tmpl` (darwin-only, re-runs when contents change) |
+| 11. AeroSpace reload | `.chezmoiscripts/run_onchange_after_03-aerospace-reload.sh.tmpl` |
+| 12. Accessibility prompts | `.chezmoiscripts/run_once_after_04-accessibility.sh.tmpl` (skips if AeroSpace already running) |
 
 ### 3.3 CI
 
@@ -228,12 +228,12 @@ Migration must replace this with a chezmoi-equivalent smoke test:
 │   ├── run_once_before_02-homebrew.sh.tmpl
 │   ├── run_onchange_before_03-brew-packages.sh.tmpl
 │   ├── run_once_before_04-shell.sh.tmpl
-│   ├── run_once_before_06-cleanup-legacy.sh
-│   ├── run_onchange_07-macos-defaults.sh.tmpl
-│   ├── run_onchange_after_08-aerospace-reload.sh.tmpl
-│   ├── run_once_after_05-ssh-include.sh.tmpl
-│   ├── run_once_after_09-accessibility.sh.tmpl
-│   └── run_once_after_10-install-update-launchd.sh.tmpl   # tmux update indicator
+│   ├── run_once_before_05-cleanup-legacy.sh
+│   ├── run_once_after_01-ssh-include.sh.tmpl
+│   ├── run_onchange_after_02-macos-defaults.sh.tmpl
+│   ├── run_onchange_after_03-aerospace-reload.sh.tmpl
+│   ├── run_once_after_04-accessibility.sh.tmpl
+│   └── run_once_after_05-install-update-launchd.sh.tmpl   # tmux update indicator (Phase 7)
 │
 ├── dot_config/                           # → ~/.config/
 │   ├── aerospace/aerospace.toml
