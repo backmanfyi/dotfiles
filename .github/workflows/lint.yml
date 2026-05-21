@@ -15,10 +15,12 @@ jobs:
       - name: Run shellcheck
         # severity=error catches real bugs; warnings are for style issues in
         # existing scripts that are out of scope for this pipeline.
+        # .tmpl files are intentionally skipped — they contain Go template
+        # directives that shellcheck doesn't understand.
         run: |
           find . -name '*.sh' \
             -not -path './.git/*' \
-            -not -path './nvim/*' \
+            -not -path './.claude/*' \
             | xargs shellcheck --severity=error
 
   # ── Zsh config syntax ────────────────────────────────────────────────────────
@@ -64,7 +66,7 @@ jobs:
       - name: Source-state directories exist
         run: |
           missing=0
-          configs=("bat" "ghostty" "git" "nvim" "private_ssh" "starship" "tmux")
+          configs=("aerospace" "bat" "ghostty" "git" "go" "nvim" "private_ssh" "starship" "tmux")
           for config in "${configs[@]}"; do
             if [[ ! -e "dot_config/${config}" ]]; then
               echo "MISSING: dot_config/${config}"
@@ -81,24 +83,26 @@ jobs:
               echo "OK: ${f}"
             fi
           done
+          claude_paths=("CLAUDE.md" "settings.json" "agents" "hooks" "skills" "templates")
+          for p in "${claude_paths[@]}"; do
+            if [[ ! -e "dot_claude/${p}" ]]; then
+              echo "MISSING: dot_claude/${p}"
+              missing=1
+            else
+              echo "OK: dot_claude/${p}"
+            fi
+          done
           exit "${missing}"
 
       - name: No hardcoded home directory paths
-        # Catches /Users/<name> leaking into configs that should be portable.
-        # Excludes the README (documentation) and workflow files themselves.
+        # Catches /Users/<name>/ leaking into any tracked file (configs,
+        # templates, dotfiles, extensionless includes). Pattern matches the
+        # specific username form so the check doesn't trip on its own
+        # self-documentation.
         run: |
-          if grep -rn '/Users/' \
-            --include='*.sh' \
-            --include='*.conf' \
-            --include='*.toml' \
-            --include='*.ini' \
-            --include='*.zsh' \
-            --include='*.zshrc' \
-            --include='*.zshenv' \
-            --include='*.tmpl' \
-            .; then
+          if git ls-files | xargs grep -nE '/Users/[a-z][a-z0-9_-]*/' 2>/dev/null; then
             echo ""
-            echo "ERROR: hardcoded /Users/ paths found above — use \$HOME or \$XDG_CONFIG_HOME instead"
+            echo "ERROR: hardcoded home directory paths found — use \$HOME, ~, or XDG vars"
             exit 1
           fi
           echo "OK: no hardcoded home paths"
