@@ -59,6 +59,11 @@ Two flavours:
 
 We'll use **global symlink mode**. Files that need templating (`chezmoi.toml.tmpl`, the brew install script, hostname-dependent things) are automatically excluded and become managed copies — which is correct behaviour.
 
+**Important consequence of the carve-out** — we deliberately avoid using `executable_` and `private_` prefixes on **individual files**, because both would force a real-file copy (breaking live-edit). Instead:
+
+- Executable scripts/hooks keep their +x bit in git (mode 100755) and are deployed as symlinks. The symlink resolves to the source file and execute access uses the source's mode. No prefix needed.
+- Sensitive files like `~/.config/ssh/config` are protected by their parent **directory** being `private_` (mode 0700). The directory becomes a real dir (chezmoi creates it with restricted perms), but the file inside can still be a symlink. SSH and similar tools are satisfied because the dir mode prevents anyone else from traversing in.
+
 ### 2.3 Scripts (replacement for `setup.sh` steps)
 
 | Prefix | Semantics |
@@ -179,10 +184,10 @@ Mapped to chezmoi destinations:
 | 3. Register `/opt/homebrew/bin/zsh` in `/etc/shells` + `chsh` | `.chezmoiscripts/run_once_before_04-shell.sh.tmpl` |
 | 4. Symlinks for `~/.config/*` | **chezmoi itself**, via `mode = "symlink"` + `dot_config/...` source layout |
 | 5. Claude Code config | **chezmoi itself**, via `dot_claude/...` source layout |
-| 5. `chmod +x` on Claude hooks | `executable_` prefix on each hook file in source |
-| 6. Git hooks `chmod +x` | `executable_` prefix on `dot_config/git/hooks/pre-commit` and on `.githooks/pre-commit` (note: the latter is repo-local, not deployed; the chmod still needs doing — covered by an `executable_` attribute in source via `chezmoi chattr` once we re-add it OR by the `_link`-style helper in CI) |
+| 5. `chmod +x` on Claude hooks | git already tracks them as mode 100755; symlink-mode deploy inherits +x via the symlink → source file |
+| 6. Git hooks `chmod +x` | Same — git mode bits preserved through symlink |
 | 7. SSH `Include` line in `~/.ssh/config` | `.chezmoiscripts/run_once_after_05-ssh-include.sh.tmpl` |
-| 8. SSH permissions (700 dir / 600 files) | `private_dot_ssh/private_config` (chezmoi sets `0600` on `private_` files by default in symlink-mode-excluded files; SSH config is symlinked → real file because `private_`) |
+| 8. SSH permissions (700 dir) | `dot_config/private_ssh/` — `private_` on the dir gives mode 0700; file inside is a symlink with no per-file prefix |
 | 9. Remove legacy `~/.zshrc` / `~/.zshenv` | `.chezmoiscripts/run_once_before_06-cleanup-legacy.sh` |
 | 10. macOS defaults | `.chezmoiscripts/run_onchange_07-macos-defaults.sh.tmpl` (darwin-only, re-runs when contents change) |
 | 11. AeroSpace reload | `.chezmoiscripts/run_onchange_after_08-aerospace-reload.sh.tmpl` |
@@ -240,36 +245,33 @@ Migration must replace this with a chezmoi-equivalent smoke test:
 │   │   ├── allowed_signers
 │   │   ├── ignore
 │   │   ├── themes.ini
-│   │   └── hooks/
-│   │       └── executable_pre-commit
+│   │   └── hooks/pre-commit              # +x preserved via git mode bits + symlink
 │   ├── go/env
-│   ├── ghostty/config
 │   ├── nvim/                             # init.lua, lua/, after/, lazy-lock.json, lazyvim.json
+│   ├── private_ssh/                      # → ~/.config/ssh/ (mode 0700)
+│   │   └── config                        # symlinked; protected by parent dir mode
 │   ├── starship/config.toml
 │   ├── tmux/
 │   │   ├── tmux.conf
 │   │   └── scripts/
-│   │       ├── executable_check-updates.sh           # NEW — drives the tmux indicator
-│   │       ├── executable_get-AWS-profile.sh
-│   │       ├── executable_kill_session.sh
-│   │       ├── executable_zoom.sh
-│   │       ├── executable_assume-role.sh
-│   │       ├── executable_aws-sso-assume-role.sh
+│   │       ├── check-updates.sh          # NEW — drives the tmux indicator
+│   │       ├── get-AWS-profile.sh
+│   │       ├── kill_session.sh
+│   │       ├── zoom.sh
+│   │       ├── assume-role.sh
+│   │       ├── aws-sso-assume-role.sh
 │   │       └── macros/
 │   └── zsh/
 │       ├── dot_zshrc                     # → ~/.config/zsh/.zshrc
 │       └── dot_zshenv                    # → ~/.config/zsh/.zshenv
 │
-├── private_dot_ssh/                       # → ~/.ssh/ (mode 0700)
-│   └── private_config                     # → ~/.ssh/config (mode 0600)
-│
 ├── dot_claude/                            # → ~/.claude/
 │   ├── CLAUDE.md
 │   ├── settings.json
 │   ├── agents/                            # *.md files, just symlinked
-│   ├── hooks/
-│   │   ├── executable_skill-reminder.sh
-│   │   └── executable_outbound-write-warn.sh
+│   ├── hooks/                             # +x preserved via git mode bits + symlink
+│   │   ├── skill-reminder.sh
+│   │   └── outbound-write-warn.sh
 │   ├── skills/                            # may contain skill dirs
 │   └── templates/                         # CLAUDE.iac.md, CLAUDE.web.md
 │
@@ -381,26 +383,19 @@ bat/                        → dot_config/bat/
 brew/Brewfile               → Brewfile                       # flattens brew/ subdir
 ghostty/                    → dot_config/ghostty/
 git/                        → dot_config/git/
-git/hooks/pre-commit        → dot_config/git/hooks/executable_pre-commit
 go/                         → dot_config/go/                 # NEW deploy (fixes setup.sh bug)
 nvim/                       → dot_config/nvim/
 starship/                   → dot_config/starship/
-tmux/tmux.conf              → dot_config/tmux/tmux.conf
-tmux/scripts/zoom.sh        → dot_config/tmux/scripts/executable_zoom.sh
-tmux/scripts/kill_session.sh → dot_config/tmux/scripts/executable_kill_session.sh
-tmux/scripts/get-AWS-profile.sh → dot_config/tmux/scripts/executable_get-AWS-profile.sh
-tmux/scripts/assume-role.sh → dot_config/tmux/scripts/executable_assume-role.sh
-tmux/scripts/aws-sso-assume-role.sh → dot_config/tmux/scripts/executable_aws-sso-assume-role.sh
-tmux/scripts/macros/        → dot_config/tmux/scripts/macros/
-zsh/zshrc                   → dot_config/zsh/dot_zshrc
+tmux/                       → dot_config/tmux/               # whole-dir move; scripts retain +x via git
+zsh/                        → dot_config/zsh/
+zsh/zshrc                   → dot_config/zsh/dot_zshrc        # within-dir rename for leading dot
 zsh/zshenv                  → dot_config/zsh/dot_zshenv
-ssh/                        → private_dot_ssh/
-ssh/config                  → private_dot_ssh/private_config
-claude/                     → dot_claude/
-claude/hooks/skill-reminder.sh    → dot_claude/hooks/executable_skill-reminder.sh
-claude/hooks/outbound-write-warn.sh → dot_claude/hooks/executable_outbound-write-warn.sh
-claude/templates/           → dot_claude/templates/          # NEW deploy
+ssh/                        → dot_config/private_ssh/         # private_ on DIR (mode 0700)
+claude/                     → dot_claude/                     # hooks/ keeps +x via git
+claude/templates/           → dot_claude/templates/           # NEW deploy (covered by whole-dir move)
 ```
+
+No `executable_` or per-file `private_` prefixes — git's mode bits + symlink-mode deploy handle execute and the parent-dir `private_` handles SSH protection. See §2.2.
 
 Use `git mv` so history is preserved. After the renames, **do not** run `chezmoi apply` yet — the existing symlinks in `$HOME` still point at the *old* paths, which no longer exist. That's fine; we fix it in phase 4.
 
