@@ -4,10 +4,10 @@
 	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILTvy5M5TUKRu82gZXhS195/GjB6phYJO0bzutx5sxCG
 
 [include]
-    path = /Users/larsbackman/.config/dotfiles/git/themes.ini
+    path = ~/.config/git/themes.ini
 
 [include]
-    path = /Users/larsbackman/.config/dotfiles/git/alias.ini
+    path = ~/.config/git/alias.ini
 
 [credential]
 	helper = osxkeychain

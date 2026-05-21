@@ -60,15 +60,23 @@ Migration plan and rationale: [`docs/chezmoi-migration.md`](docs/chezmoi-migrati
 ### Fresh machine
 
 ```sh
-sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply backmanfyi/dotfiles
+# 1. Xcode CLT (provides git)
+xcode-select --install
+
+# 2. Clone the repo to its pinned source location
+git clone git@github.com:backmanfyi/dotfiles.git ~/.config/dotfiles
+
+# 3. Install chezmoi, point it at the cloned source, and apply
+sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply --source "$HOME/.config/dotfiles"
 ```
 
-That single command:
-1. Downloads chezmoi to a temp dir
-2. Clones this repo to `~/.config/dotfiles` (pinned by `.chezmoi.toml.tmpl`)
-3. Runs the `run_once_before_*` scripts (ZDOTDIR, Homebrew, brew bundle, shell, legacy cleanup)
-4. Symlinks `~/.config/*` and `~/.claude/*` back into the source dir
-5. Runs the `run_onchange_*` and `run_once_after_*` scripts (SSH Include, macOS defaults, AeroSpace reload, Accessibility prompt)
+The `--source "$HOME/.config/dotfiles"` flag is required because `.chezmoi.toml.tmpl` pins `sourceDir` to that path — without it, chezmoi would clone to its default `~/.local/share/chezmoi` and then look for source state at `~/.config/dotfiles`, which would be empty.
+
+What `chezmoi init --apply` does:
+1. Renders `.chezmoi.toml.tmpl` → `~/.config/chezmoi/chezmoi.toml`
+2. Runs the `run_once_before_*` scripts (ZDOTDIR, Homebrew, brew bundle, shell, legacy cleanup)
+3. Symlinks `~/.config/*` and `~/.claude/*` back into the source dir
+4. Runs the `run_onchange_*` and `run_once_after_*` scripts (SSH Include, macOS defaults, AeroSpace reload, Accessibility prompt, launchd update-indicator)
 
 Restart your terminal when complete.
 
