@@ -24,8 +24,9 @@ behind=$(chezmoi git -- rev-list --count main..origin/main 2>/dev/null || echo 0
 if [ "$behind" -eq 0 ]; then
   : > "$STATE_FILE"
 else
-  # Cloud-download glyph (nf-md-cloud-download, U+F0162) + ' update ' label.
-  # Written as raw UTF-8 hex bytes (F3 B0 85 A2) — the literal character
-  # was being silently stripped at tool boundaries.
-  printf ' \xf3\xb0\x85\xa2 update ' > "$STATE_FILE"
+  # Cloud-download glyph (nf-md-cloud-download, U+F0162) + descriptive
+  # label including the tmux keybinding hint. Written as raw UTF-8 hex
+  # bytes (F3 B0 85 A2) — the literal character was being silently
+  # stripped at tool boundaries.
+  printf ' \xf3\xb0\x85\xa2 update dotfiles [C-q U] ' > "$STATE_FILE"
 fi
