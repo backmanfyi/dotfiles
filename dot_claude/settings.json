@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -q 'git push'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: Use the git-push skill for this git push. Invoke it via the Skill tool (skill name: git-push) — it handles CI monitoring, branch safety, and the full merge workflow.\"}}'; elif echo \"$cmd\" | grep -q 'gh pr create'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: Use the git-pr-create skill for PR creation. Invoke it via the Skill tool (skill name: git-pr-create) — it drafts titles, selects labels, and opens the PR following monorepo conventions.\"}}'; fi 2>/dev/null || true",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -q 'git push'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: Use the git-push skill for this git push. Invoke it via the Skill tool (skill name: git-push) — it handles CI monitoring, branch safety, and the full merge workflow.\"}}'; elif echo \"$cmd\" | grep -q 'gh pr create'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: Use the git-push skill for the full push → PR → babysit CI workflow. Invoke it via the Skill tool (skill name: git-push) — Phase 6 opens the PR following monorepo conventions.\"}}'; fi 2>/dev/null || true",
             "statusMessage": "Checking skill requirements..."
           }
         ]
@@ -64,6 +64,10 @@
       }
     ]
   },
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true
+  },
+  "skipDangerousModePermissionPrompt": true,
   "theme": "light",
   "skipAutoPermissionPrompt": true,
   "mcpServers": {
@@ -112,6 +116,5 @@
         "ALLOW_ONLY_NON_DESTRUCTIVE_TOOLS": "true"
       }
     }
-  },
-  "skipDangerousModePermissionPrompt": true
+  }
 }
