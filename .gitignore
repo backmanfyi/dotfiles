@@ -1,4 +1,7 @@
-git/login.ini
+dot_config/git/login.ini
+
+# Brew lock files (moved from brew/.gitignore when Brewfile flattened to root)
+Brewfile.lock*
 
 # Claude Code per-project state (machine-local: settings.local.json, worktrees/)
 .claude/
