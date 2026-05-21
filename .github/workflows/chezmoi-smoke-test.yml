@@ -1,0 +1,43 @@
+name: chezmoi smoke test
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: smoke-test-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    name: chezmoi diff + dry-run on macOS
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install chezmoi
+        run: brew install chezmoi
+
+      - name: chezmoi init against checkout
+        run: chezmoi init --source "$(pwd)"
+
+      - name: Render template (chezmoi data)
+        run: chezmoi data | head -50
+
+      - name: chezmoi diff
+        run: chezmoi diff
+
+      - name: chezmoi apply --dry-run
+        run: chezmoi apply --dry-run -v
+
+      - name: Validate Brewfile syntax
+        run: ruby -c Brewfile
+
+      - name: No hardcoded /Users/ paths in source state
+        run: |
+          if git ls-files dot_config dot_claude .chezmoiscripts .chezmoi.toml.tmpl | xargs grep -n '/Users/' 2>/dev/null; then
+            echo "ERROR: hardcoded /Users/ paths in tracked files"
+            exit 1
+          fi
+          echo "OK"

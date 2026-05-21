@@ -32,10 +32,10 @@ jobs:
         run: sudo apt-get install -y zsh
 
       - name: Check zshrc syntax
-        run: zsh -n zsh/zshrc
+        run: zsh -n dot_config/zsh/dot_zshrc
 
       - name: Check zshenv syntax
-        run: zsh -n zsh/zshenv
+        run: zsh -n dot_config/zsh/dot_zshenv
 
   # ── TOML validation ──────────────────────────────────────────────────────────
   toml:
@@ -52,7 +52,7 @@ jobs:
           chmod +x /usr/local/bin/taplo
 
       - name: Validate starship config
-        run: taplo check starship/config.toml
+        run: taplo check dot_config/starship/config.toml
 
   # ── Repo integrity checks ────────────────────────────────────────────────────
   repo-checks:
@@ -61,19 +61,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: All symlink targets exist in repo
+      - name: Source-state directories exist
         run: |
           missing=0
-          configs=("bat" "ghostty" "git" "nvim" "ssh" "starship" "tmux")
+          configs=("bat" "ghostty" "git" "nvim" "private_ssh" "starship" "tmux")
           for config in "${configs[@]}"; do
-            if [[ ! -e "${config}" ]]; then
-              echo "MISSING: ${config}"
+            if [[ ! -e "dot_config/${config}" ]]; then
+              echo "MISSING: dot_config/${config}"
               missing=1
             else
-              echo "OK: ${config}"
+              echo "OK: dot_config/${config}"
             fi
           done
-          for f in zsh/zshrc zsh/zshenv; do
+          for f in dot_config/zsh/dot_zshrc dot_config/zsh/dot_zshenv; do
             if [[ ! -f "${f}" ]]; then
               echo "MISSING: ${f}"
               missing=1
@@ -95,13 +95,10 @@ jobs:
             --include='*.zsh' \
             --include='*.zshrc' \
             --include='*.zshenv' \
+            --include='*.tmpl' \
             .; then
             echo ""
             echo "ERROR: hardcoded /Users/ paths found above — use \$HOME or \$XDG_CONFIG_HOME instead"
             exit 1
           fi
           echo "OK: no hardcoded home paths"
-
-      - name: setup.sh is executable
-        run: |
-          test -x setup.sh || (echo "ERROR: setup.sh is not executable"; exit 1)
