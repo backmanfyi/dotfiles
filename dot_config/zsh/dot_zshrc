@@ -98,7 +98,6 @@ if [ $(date +'%j') != $(stat -f '%Sm' -t '%j' ${ZDOTDIR:-~}/.zcompdump 2>/dev/nu
 else
   compinit -C
 fi
-complete -C '/usr/local/bin/aws_completer' aws
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
 eval "$(zoxide init zsh)"
 alias j='z'
