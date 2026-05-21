@@ -94,6 +94,7 @@ Restart your terminal when complete.
 | `after_02` | `run_onchange_after_02-macos-defaults.sh.tmpl` | Fast key repeat, Finder, Dock, screenshots, etc. |
 | `after_03` | `run_onchange_after_03-aerospace-reload.sh.tmpl` | `aerospace reload-config` |
 | `after_04` | `run_once_after_04-accessibility.sh.tmpl` | Interactive Accessibility prompt (skips if AeroSpace already running) |
+| `after_05` | `run_onchange_after_05-install-update-launchd.sh.tmpl` | Installs the launchd agent that powers the tmux update indicator |
 
 ### Manual follow-ups
 
@@ -181,7 +182,7 @@ Shell startup is kept fast deliberately:
 
 ### Neovim
 
-[LazyVim](https://lazyvim.org) distribution. Config at `nvim/lua/`.
+[LazyVim](https://lazyvim.org) distribution. Config at `dot_config/nvim/lua/`.
 
 ### tmux
 
@@ -231,13 +232,16 @@ Diff output via [delta](https://github.com/dandavison/delta) with side-by-side v
 
 ## Claude Code
 
-Config at `claude/`. Three files are tracked:
+Config at `dot_claude/`. Tracked:
 
-| File | Purpose |
+| File / dir | Purpose |
 |---|---|
 | `CLAUDE.md` | Global instructions — workflow preferences, git rules, communication style, auto-allowed commands |
-| `settings.json` | MCP server definitions (GitHub, Context7). No secrets — tokens are passed via environment variables |
-| `agents/` | Custom subagent definitions (`auth0-expert`, `owasp-top10-expert`) |
+| `settings.json` | MCP server definitions and Claude Code preferences. No secrets — tokens are passed via environment variables |
+| `agents/` | Custom subagent definitions (auth0-expert, owasp-top10-expert, terraform-expert, testing-expert, tracer, typescript-expert) |
+| `hooks/` | Pre-tool-use hooks (skill-reminder, outbound-write-warn) |
+| `skills/` | Custom skills (skill-creator) |
+| `templates/` | Per-project CLAUDE.md templates (web, iac) |
 
 Everything else in `~/.claude/` (sessions, tasks, cache, telemetry, etc.) is runtime state and not tracked.
 
@@ -254,13 +258,13 @@ All commits are signed with your SSH key via 1Password:
 git log --show-signature -5
 ```
 
-The `git/allowed_signers` file maps your email to your public key for local verification.
+The `dot_config/git/allowed_signers` file maps your email to your public key for local verification.
 
 ### Secret scanning
 
 [TruffleHog](https://github.com/trufflesecurity/trufflehog) runs at two points:
 
-**Pre-commit hook** (`git/hooks/pre-commit`) — blocks the commit if verified secrets are found in staged changes. Installed globally via `core.hooksPath` so it runs in every repository on the machine.
+**Pre-commit hook** (`dot_config/git/hooks/pre-commit`) — blocks the commit if verified secrets are found in staged changes. Installed globally via `core.hooksPath` so it runs in every repository on the machine.
 
 ```sh
 # To bypass in an emergency (use with caution)
@@ -291,8 +295,8 @@ Four parallel jobs:
 |---|---|---|
 | `shellcheck` | shellcheck | All `.sh` files at `--severity=error` |
 | `zsh-syntax` | `zsh -n` | `zshrc` and `zshenv` parse without errors |
-| `toml` | taplo | `starship/config.toml` is valid TOML |
-| `repo-checks` | bash | Symlink targets exist, no hardcoded `/Users/` paths, `setup.sh` is executable |
+| `toml` | taplo | `dot_config/starship/config.toml` is valid TOML |
+| `repo-checks` | bash | Source-state directories exist (`dot_config/*`, `dot_claude/*`), no hardcoded `/Users/<name>/` paths in any tracked file |
 
 ### `chezmoi-smoke-test.yml` — PRs to main (macOS)
 

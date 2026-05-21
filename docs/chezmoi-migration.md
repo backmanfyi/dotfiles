@@ -1,7 +1,7 @@
 # chezmoi migration plan
 
-Status: **draft / not yet executed**.
-This document is the source of truth for migrating this repo from `setup.sh` + symlinks to [chezmoi](https://chezmoi.io). Treat it as a playbook — every decision is recorded here so we don't have to rediscover them during the migration.
+Status: **executed** — migration landed via PR #23.
+This document was the source of truth during the migration from `setup.sh` + symlinks to [chezmoi](https://chezmoi.io). Kept as a historical artifact: §1–§5 describe the design decisions, §6–§9 describe the phased migration steps, §10–§12 capture risks and decisions. Inline section bodies may reference the planned numbering of scripts and files; the actual shipped numbering can drift slightly — when in doubt, check `.chezmoiscripts/` and `dot_config/` on disk.
 
 ---
 
@@ -79,8 +79,8 @@ Ordering is strictly ASCII on the stripped target name. We prefix with `NN-` num
 Idiom for "re-run when an external file changes": embed a hash of the dependency in a script comment so the script's own SHA256 changes:
 
 ```sh
-# Brewfile hash: {{ include "brew/Brewfile" | sha256sum }}
-brew bundle --file="$(chezmoi source-path)/brew/Brewfile"
+# Brewfile hash: {{ include "Brewfile" | sha256sum }}
+brew bundle --file="$(chezmoi source-path)/Brewfile"
 ```
 
 `run_once_*` scripts skip on a fresh machine if the BoltDB has already recorded their SHA256. Resetting state: `chezmoi state delete-bucket --bucket=scriptState`.
@@ -167,7 +167,7 @@ Files NOT to manage with chezmoi (kept in repo only, not deployed):
 ```
 .githooks/pre-commit                 # repo-local hook chain
 .github/workflows/*                  # CI
-brew/Brewfile                        # data file consumed by a script
+Brewfile                             # data file consumed by a script (at repo root)
 README.md, LICENSE
 scripts/*                            # repo-local utility scripts
 ```
@@ -477,7 +477,7 @@ jobs:
       - name: chezmoi verify
         run: chezmoi verify
       - name: Validate Brewfile syntax
-        run: ruby -c brew/Brewfile
+        run: ruby -c Brewfile
 ```
 
 Rename the workflow file to `chezmoi-smoke-test.yml`.
@@ -504,8 +504,8 @@ Update `README.md` with the new fresh-machine bootstrap and daily commands.
 
 See §9 for the full design. This phase wires up:
 
-- `dot_config/tmux/scripts/executable_check-updates.sh` (the polling script).
-- A `run_once_after_10-install-update-launchd.sh.tmpl` that installs `~/Library/LaunchAgents/fyi.backman.chezmoi-check.plist` and `launchctl load`s it.
+- `dot_config/tmux/scripts/check-updates.sh` (the polling script). No `executable_` prefix — git tracks it as mode 100755 and symlink-mode preserves +x through the deployed symlink.
+- A `run_onchange_after_05-install-update-launchd.sh.tmpl` that installs `~/Library/LaunchAgents/fyi.backman.chezmoi-check.plist` and `launchctl load`s it. (`run_onchange_` so plist edits redeploy automatically.)
 - Updated `dot_config/tmux/tmux.conf` adding the status-bar indicator and `prefix + U` binding.
 
 ---
@@ -817,7 +817,7 @@ read -r -p 'Press enter once enabled (or Ctrl-C to skip)... ' _
 
 ### 9.1 The polling script
 
-`dot_config/tmux/scripts/executable_check-updates.sh`:
+`dot_config/tmux/scripts/check-updates.sh`:
 
 ```sh
 #!/usr/bin/env bash
@@ -850,7 +850,7 @@ Output is intentionally tiny — just the glyph or nothing.  is a Nerd Font clou
 
 `launchd` is the right place for periodic background work on macOS — survives across tmux sessions, survives reboot via `RunAtLoad`, doesn't tie up a tmux pane.
 
-`.chezmoiscripts/run_once_after_10-install-update-launchd.sh.tmpl`:
+`.chezmoiscripts/run_onchange_after_05-install-update-launchd.sh.tmpl`:
 
 ```sh
 {{- if eq .chezmoi.os "darwin" -}}
@@ -950,8 +950,8 @@ Migration is done when:
 - All apps still work (manual smoke: open ghostty → tmux → nvim → aerospace).
 - CI smoke test passes on a fresh PR.
 - `chezmoi update` is the documented daily command in README.
-- Fresh-machine bootstrap runs successfully end-to-end via `sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply <repo>` on a clean macOS VM (or a fresh user account).
-- Tmux indicator shows the right state (empty when in sync, count when behind).
+- Fresh-machine bootstrap runs successfully end-to-end via pre-clone + `chezmoi init --apply --source ~/.config/dotfiles` on a clean macOS VM (or a fresh user account). The pinned `sourceDir` in `.chezmoi.toml.tmpl` requires the explicit `--source` flag; see README §"Fresh machine".
+- Tmux indicator shows the right state — empty when local `main` matches `origin/main`, cloud-download glyph when `origin/main` has commits not yet pulled (presence-only per §12 decision 7).
 - `prefix + U` pulls and applies in a popup.
 
 ---
