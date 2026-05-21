@@ -821,26 +821,23 @@ read -r -p 'Press enter once enabled (or Ctrl-C to skip)... ' _
 
 ```sh
 #!/usr/bin/env bash
-# Background-poll chezmoi for pending updates and write a presence-only
-# indicator that the tmux status bar consumes. Designed to be cheap,
-# non-blocking, and tolerant of offline state.
+# Background-poll the dotfiles remote for new commits on main and write a
+# presence-only indicator that the tmux status bar consumes. Compares
+# against origin/main directly so the indicator reflects "main has
+# commits I haven't pulled" regardless of the currently checked-out branch.
 set -euo pipefail
 
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi"
 STATE_FILE="${STATE_DIR}/update-status"
 mkdir -p "$STATE_DIR"
 
-# Best-effort fetch. On failure (no network, etc.) we keep the last known value
-# rather than blanking it — avoids "everything's up to date" lies when offline.
-if ! chezmoi git -- fetch --quiet 2>/dev/null; then
+if ! chezmoi git -- fetch --quiet origin main 2>/dev/null; then
   exit 0
 fi
 
-# Anything behind upstream OR locally diverging?
-behind=$(chezmoi git -- rev-list --count HEAD..@{upstream} 2>/dev/null || echo 0)
-dirty=$(chezmoi status 2>/dev/null | grep -c . || true)
+behind=$(chezmoi git -- rev-list --count main..origin/main 2>/dev/null || echo 0)
 
-if [ "$behind" -eq 0 ] && [ "$dirty" -eq 0 ]; then
+if [ "$behind" -eq 0 ]; then
   : > "$STATE_FILE"
 else
   printf '  ' > "$STATE_FILE"
