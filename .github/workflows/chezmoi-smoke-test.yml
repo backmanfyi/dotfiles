@@ -1,0 +1,52 @@
+name: chezmoi smoke test
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: smoke-test-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    name: chezmoi diff + dry-run on macOS
+    runs-on: macos-latest
+
+    # The repo's .chezmoi.toml.tmpl pins sourceDir to ~/.config/dotfiles
+    # (the user's daily machine layout). On the runner the source is at
+    # $GITHUB_WORKSPACE, so every chezmoi call has to be told explicitly.
+    env:
+      CHEZMOI_SOURCE: ${{ github.workspace }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install chezmoi
+        run: brew install chezmoi
+
+      - name: chezmoi init against checkout
+        run: chezmoi init --source "$CHEZMOI_SOURCE"
+
+      - name: Render template (chezmoi data)
+        run: chezmoi --source "$CHEZMOI_SOURCE" data
+
+      - name: chezmoi diff
+        run: chezmoi --source "$CHEZMOI_SOURCE" diff
+
+      - name: chezmoi apply --dry-run
+        run: chezmoi --source "$CHEZMOI_SOURCE" apply --dry-run -v
+
+      - name: Validate Brewfile syntax
+        run: ruby -c Brewfile
+
+      - name: No hardcoded /Users/<name>/ paths in tracked files
+        # Targets a specific username pattern rather than the literal string
+        # "/Users/" so the check doesn't trip on its own self-documentation.
+        run: |
+          if git ls-files | xargs grep -nE '/Users/[a-z][a-z0-9_-]*/' 2>/dev/null; then
+            echo "ERROR: hardcoded home directory paths in tracked files"
+            echo "       use \$HOME, ~, or the equivalent XDG/chezmoi variable"
+            exit 1
+          fi
+          echo "OK"

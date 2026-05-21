@@ -1,0 +1,26 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Interactive Accessibility prompt for AeroSpace. Skips if AeroSpace is
+# already running — that's a reliable signal that Accessibility was already
+# granted in a previous session.
+set -euo pipefail
+
+if [[ ! -d /Applications/AeroSpace.app ]]; then
+  exit 0
+fi
+
+if pgrep -x AeroSpace >/dev/null 2>&1; then
+  exit 0
+fi
+
+if [[ ! -t 0 ]]; then
+  echo "Non-interactive — grant Accessibility manually for AeroSpace" >&2
+  exit 0
+fi
+
+open -a "AeroSpace" 2>/dev/null || true
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility" 2>/dev/null || true
+
+printf '\nAction needed: enable Accessibility for AeroSpace\n'
+read -r -p 'Press enter once enabled (or Ctrl-C to skip)... ' _
+{{ end -}}

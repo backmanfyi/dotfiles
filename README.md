@@ -1,10 +1,12 @@
 # dotfiles
 
 [![Lint](https://github.com/backmanfyi/dotfiles/actions/workflows/lint.yml/badge.svg)](https://github.com/backmanfyi/dotfiles/actions/workflows/lint.yml)
-[![Setup smoke test](https://github.com/backmanfyi/dotfiles/actions/workflows/setup-smoke-test.yml/badge.svg)](https://github.com/backmanfyi/dotfiles/actions/workflows/setup-smoke-test.yml)
+[![chezmoi smoke test](https://github.com/backmanfyi/dotfiles/actions/workflows/chezmoi-smoke-test.yml/badge.svg)](https://github.com/backmanfyi/dotfiles/actions/workflows/chezmoi-smoke-test.yml)
 [![Secret scan](https://github.com/backmanfyi/dotfiles/actions/workflows/trufflehog.yml/badge.svg)](https://github.com/backmanfyi/dotfiles/actions/workflows/trufflehog.yml)
 
-Personal macOS developer environment for platform and infrastructure engineering. Managed via symlinks — the repo is the source of truth, `~/.config/*` just points here.
+Personal macOS developer environment for platform and infrastructure engineering. Managed with [chezmoi](https://chezmoi.io) in symlink mode — the repo is the source of truth, `~/.config/*` symlinks back into it.
+
+Migration plan and rationale: [`docs/chezmoi-migration.md`](docs/chezmoi-migration.md).
 
 ---
 
@@ -28,18 +30,19 @@ Personal macOS developer environment for platform and infrastructure engineering
 
 | Config | Tool | Purpose |
 |---|---|---|
-| `zsh/` | zsh | Shell config, aliases, environment |
-| `nvim/` | Neovim (LazyVim) | Editor |
-| `tmux/` | tmux | Terminal multiplexer |
-| `ghostty/` | Ghostty | Terminal emulator |
-| `aerospace/` | AeroSpace | Tiling window manager |
-| `git/` | git | Version control, signing, aliases |
-| `starship/` | Starship | Shell prompt |
-| `ssh/` | SSH | Client config, 1Password agent |
-| `bat/` | bat | Syntax-highlighted `cat` replacement |
-| `brew/` | Homebrew | Package manifest (Brewfile) |
-| `claude/` | Claude Code | CLAUDE.md, MCP servers, custom agents |
-| `scripts/` | — | Utility scripts on `$PATH` |
+| `dot_config/zsh/` | zsh | Shell config, aliases, environment |
+| `dot_config/nvim/` | Neovim (LazyVim) | Editor |
+| `dot_config/tmux/` | tmux | Terminal multiplexer |
+| `dot_config/ghostty/` | Ghostty | Terminal emulator |
+| `dot_config/aerospace/` | AeroSpace | Tiling window manager |
+| `dot_config/git/` | git | Version control, signing, aliases |
+| `dot_config/starship/` | Starship | Shell prompt |
+| `dot_config/private_ssh/` | SSH | Client config, 1Password agent (dir mode 0700) |
+| `dot_config/bat/` | bat | Syntax-highlighted `cat` replacement |
+| `dot_config/go/env` | Go | `GOPRIVATE`, toolchain env |
+| `Brewfile` | Homebrew | Package manifest |
+| `dot_claude/` | Claude Code | CLAUDE.md, MCP servers, custom agents, hooks, skills, templates |
+| `scripts/` | — | Utility scripts (not deployed by chezmoi) |
 
 ---
 
@@ -54,61 +57,82 @@ Personal macOS developer environment for platform and infrastructure engineering
 
 ## Installation
 
+### Fresh machine
+
 ```sh
+# 1. Xcode CLT (provides git)
+xcode-select --install
+
+# 2. Clone the repo to its pinned source location
 git clone git@github.com:backmanfyi/dotfiles.git ~/.config/dotfiles
-bash ~/.config/dotfiles/setup.sh
+
+# 3. Install chezmoi, point it at the cloned source, and apply
+sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply --source "$HOME/.config/dotfiles"
 ```
+
+The `--source "$HOME/.config/dotfiles"` flag is required because `.chezmoi.toml.tmpl` pins `sourceDir` to that path — without it, chezmoi would clone to its default `~/.local/share/chezmoi` and then look for source state at `~/.config/dotfiles`, which would be empty.
+
+What `chezmoi init --apply` does:
+1. Renders `.chezmoi.toml.tmpl` → `~/.config/chezmoi/chezmoi.toml`
+2. Runs the `run_once_before_*` scripts (ZDOTDIR, Homebrew, brew bundle, shell, legacy cleanup)
+3. Symlinks `~/.config/*` and `~/.claude/*` back into the source dir
+4. Runs the `run_onchange_*` and `run_once_after_*` scripts (SSH Include, macOS defaults, AeroSpace reload, Accessibility prompt, launchd update-indicator)
 
 Restart your terminal when complete.
 
-### What setup.sh does
+### What chezmoi does on first apply
 
-The script is fully idempotent — safe to re-run at any time. Each step checks before acting.
-
-| Step | What happens |
-|---|---|
-| **1. ZDOTDIR bootstrap** | Writes `ZDOTDIR=~/.config/zsh` to `/etc/zshenv` so zsh finds your config on a fresh machine |
-| **2. Homebrew** | Installs Homebrew if missing, then runs `brew bundle` from the Brewfile |
-| **3. Login shell** | Registers `/opt/homebrew/bin/zsh` in `/etc/shells` and sets it as your default shell |
-| **4. Symlinks** | Creates `~/.config/{aerospace,bat,ghostty,git,nvim,ssh,starship,tmux}` → dotfiles repo |
-| **5. Claude Code** | Links `~/.claude/CLAUDE.md`, `settings.json`, and `agents/` → dotfiles repo |
-| **6. Git hooks** | `chmod +x` on all files in `git/hooks/` |
-| **7. SSH include** | Adds `Include ~/.config/ssh/config` to `~/.ssh/config` so all SSH clients use the managed config |
-| **8. SSH permissions** | `chmod 700` on the SSH dir, `chmod 600` on all files (SSH silently ignores loose permissions) |
-| **9. Cleanup** | Removes legacy `~/.zshrc` / `~/.zshenv` (with ZDOTDIR set these are never sourced and cause confusion) |
-| **10. macOS defaults** | Applies developer-friendly system settings: fast key repeat, Finder tweaks, Dock auto-hide, screenshot format, expanded save dialogs, immediate screen-lock |
-| **11. AeroSpace** | Reloads AeroSpace's config (symlink updates take effect without a restart) |
-| **12. Application Accessibility** | Launches AeroSpace, opens System Settings → Privacy → Accessibility, and waits for confirmation |
+| Phase | Script | What happens |
+|---|---|---|
+| `before_01` | `run_once_before_01-zdotdir.sh.tmpl` | Writes `ZDOTDIR=~/.config/zsh` to `/etc/zshenv` (sudo) |
+| `before_02` | `run_once_before_02-homebrew.sh.tmpl` | Installs Homebrew if missing |
+| `before_03` | `run_onchange_before_03-brew-packages.sh.tmpl` | `brew bundle` — re-runs when Brewfile changes |
+| `before_04` | `run_once_before_04-shell.sh.tmpl` | Registers brew zsh in `/etc/shells` + `chsh` |
+| `before_05` | `run_once_before_05-cleanup-legacy.sh` | Removes legacy `~/.zshrc` and `~/.zshenv` |
+| files | (chezmoi) | Symlinks `~/.config/*` and `~/.claude/*` into the source dir |
+| `after_01` | `run_once_after_01-ssh-include.sh.tmpl` | Adds `Include ~/.config/ssh/config` to `~/.ssh/config` |
+| `after_02` | `run_onchange_after_02-macos-defaults.sh.tmpl` | Fast key repeat, Finder, Dock, screenshots, etc. |
+| `after_03` | `run_onchange_after_03-aerospace-reload.sh.tmpl` | `aerospace reload-config` |
+| `after_04` | `run_once_after_04-accessibility.sh.tmpl` | Interactive Accessibility prompt (skips if AeroSpace already running) |
+| `after_05` | `run_onchange_after_05-install-update-launchd.sh.tmpl` | Installs the launchd agent that powers the tmux update indicator |
 
 ### Manual follow-ups
 
-A few things macOS won't let scripts do silently. setup.sh prompts at the right moment, but in case you skip or need to revisit:
+A few things macOS won't let scripts do silently:
 
 | What | Why | Where |
 |---|---|---|
 | Grant **AeroSpace** Accessibility | TCC requires a human toggle to allow window management | System Settings → Privacy & Security → Accessibility |
 | Set **system accent** to dawnfox pine | macOS won't let `defaults write` set a Custom Color hex; preset accents (Pink, Purple, etc.) all clash with the cream terminal palette | System Settings → Appearance → Accent → Custom Color → `#286983` |
 
-To preview what the script would do without making any changes:
+To preview what chezmoi would do without applying:
 
 ```sh
-bash setup.sh --dry-run
+chezmoi diff             # unified diff of pending changes
+chezmoi apply --dry-run  # full plan, no execution
 ```
 
 ---
 
 ## How it works
 
-Everything lives in `~/.config/dotfiles`. The setup script creates symlinks so each tool finds its config at the expected XDG path:
+Everything lives in `~/.config/dotfiles`. chezmoi runs in symlink mode, so each tool finds its config at the expected XDG path via a symlink back into the source dir:
 
 ```
-~/.config/git  →  ~/.config/dotfiles/git
-~/.config/nvim →  ~/.config/dotfiles/nvim
-~/.config/zsh/.zshrc  →  ~/.config/dotfiles/zsh/zshrc
+~/.config/git  →  ~/.config/dotfiles/dot_config/git
+~/.config/nvim →  ~/.config/dotfiles/dot_config/nvim
+~/.config/zsh/.zshrc  →  ~/.config/dotfiles/dot_config/zsh/dot_zshrc
+~/.claude/CLAUDE.md  →  ~/.config/dotfiles/dot_claude/CLAUDE.md
 ...
 ```
 
-Editing a config file in the repo is immediately live — no re-linking needed. Committing it persists the change.
+chezmoi's source-state naming conventions:
+
+- `dot_` prefix becomes a leading `.` at the target (`dot_zshrc` → `.zshrc`)
+- `private_` on a directory gives it mode 0700 (used for the SSH config dir)
+- `run_once_*` and `run_onchange_*` scripts live in `.chezmoiscripts/` and replace the old `setup.sh` steps
+
+Editing a config file in the repo is immediately live — symlink mode means `~/.config/foo/bar` and `~/.config/dotfiles/dot_config/foo/bar` are the same file on disk. Commit when ready.
 
 The zsh startup chain on a fresh machine:
 
@@ -158,7 +182,7 @@ Shell startup is kept fast deliberately:
 
 ### Neovim
 
-[LazyVim](https://lazyvim.org) distribution. Config at `nvim/lua/`.
+[LazyVim](https://lazyvim.org) distribution. Config at `dot_config/nvim/lua/`.
 
 ### tmux
 
@@ -208,13 +232,16 @@ Diff output via [delta](https://github.com/dandavison/delta) with side-by-side v
 
 ## Claude Code
 
-Config at `claude/`. Three files are tracked:
+Config at `dot_claude/`. Tracked:
 
-| File | Purpose |
+| File / dir | Purpose |
 |---|---|
 | `CLAUDE.md` | Global instructions — workflow preferences, git rules, communication style, auto-allowed commands |
-| `settings.json` | MCP server definitions (GitHub, Context7). No secrets — tokens are passed via environment variables |
-| `agents/` | Custom subagent definitions (`auth0-expert`, `owasp-top10-expert`) |
+| `settings.json` | MCP server definitions and Claude Code preferences. No secrets — tokens are passed via environment variables |
+| `agents/` | Custom subagent definitions (auth0-expert, owasp-top10-expert, terraform-expert, testing-expert, tracer, typescript-expert) |
+| `hooks/` | Pre-tool-use hooks (skill-reminder, outbound-write-warn) |
+| `skills/` | Custom skills (skill-creator) |
+| `templates/` | Per-project CLAUDE.md templates (web, iac) |
 
 Everything else in `~/.claude/` (sessions, tasks, cache, telemetry, etc.) is runtime state and not tracked.
 
@@ -231,13 +258,13 @@ All commits are signed with your SSH key via 1Password:
 git log --show-signature -5
 ```
 
-The `git/allowed_signers` file maps your email to your public key for local verification.
+The `dot_config/git/allowed_signers` file maps your email to your public key for local verification.
 
 ### Secret scanning
 
 [TruffleHog](https://github.com/trufflesecurity/trufflehog) runs at two points:
 
-**Pre-commit hook** (`git/hooks/pre-commit`) — blocks the commit if verified secrets are found in staged changes. Installed globally via `core.hooksPath` so it runs in every repository on the machine.
+**Pre-commit hook** (`dot_config/git/hooks/pre-commit`) — blocks the commit if verified secrets are found in staged changes. Installed globally via `core.hooksPath` so it runs in every repository on the machine.
 
 ```sh
 # To bypass in an emergency (use with caution)
@@ -268,17 +295,19 @@ Four parallel jobs:
 |---|---|---|
 | `shellcheck` | shellcheck | All `.sh` files at `--severity=error` |
 | `zsh-syntax` | `zsh -n` | `zshrc` and `zshenv` parse without errors |
-| `toml` | taplo | `starship/config.toml` is valid TOML |
-| `repo-checks` | bash | Symlink targets exist, no hardcoded `/Users/` paths, `setup.sh` is executable |
+| `toml` | taplo | `dot_config/starship/config.toml` is valid TOML |
+| `repo-checks` | bash | Source-state directories exist (`dot_config/*`, `dot_claude/*`), no hardcoded `/Users/<name>/` paths in any tracked file |
 
-### `setup-smoke-test.yml` — PRs to main (macOS)
+### `chezmoi-smoke-test.yml` — PRs to main (macOS)
 
 Runs on a fresh `macos-latest` runner:
-- `bash -n setup.sh` — syntax check
-- `bash setup.sh --dry-run` — full dry-run, validates all source paths exist
-- `ruby -c brew/Brewfile` — Brewfile syntax check
-- Rejects unknown flags (validates arg parsing)
-- Verifies no hardcoded paths in `setup.sh`
+- `brew install chezmoi`
+- `chezmoi init --source $(pwd)` — render `.chezmoi.toml.tmpl` against the checkout
+- `chezmoi data` — confirm template variables resolve
+- `chezmoi diff` — preview the plan
+- `chezmoi apply --dry-run -v` — full plan, validates source-state parses cleanly
+- `ruby -c Brewfile` — Brewfile syntax check
+- Forbids hardcoded `/Users/` paths in tracked source-state files
 
 ### `trufflehog.yml` — every push and PR
 
@@ -300,40 +329,48 @@ export GOPRIVATE="gitlab.com/yourorg/*"
 
 ### Adding a new config
 
-1. Add the config directory to the dotfiles repo
-2. Add the directory name to the `configs` array in `setup.sh`
-3. Run `bash setup.sh` to create the symlink
+```sh
+chezmoi add ~/.config/newtool/config
+```
+
+chezmoi copies the file into source state with the correct prefix attributes and tracks it from then on.
 
 ### Adding a git hook
 
-Drop an executable file into `git/hooks/`. It will be picked up by `core.hooksPath` in `git/config` and made executable by `setup.sh` on the next run.
+Drop the script into `dot_config/git/hooks/`. Set the executable bit (`chmod +x`) — git tracks it, and symlink-mode chezmoi preserves it through the deployed symlink.
 
 ---
 
 ## Updating
 
-### Applying changes from the repo
+### Pulling remote changes
 
 ```sh
-cd ~/.config/dotfiles
-git pull
-bash setup.sh   # re-run to apply any new symlinks or permissions
+chezmoi update -v
+```
+
+This is `git pull --rebase --autostash` + `chezmoi apply` in one command. Any `run_onchange_*` script whose tracked content changed re-fires automatically (so editing the Brewfile in a remote commit triggers `brew bundle` on update).
+
+### Checking what would change
+
+```sh
+chezmoi status       # M/A/D per file (source vs target)
+chezmoi diff         # unified diff of pending changes
 ```
 
 ### Installing new packages
 
-Add the package to `brew/Brewfile`, then:
+Add the package to `Brewfile`, then either:
 
-```sh
-brew bundle --file=~/.config/dotfiles/brew/Brewfile
-```
+- `chezmoi apply` — re-runs the `run_onchange_before_03-brew-packages` script (because the embedded Brewfile hash changes)
+- `brew bundle --file=Brewfile` — direct invocation
 
 ### Committing config changes
 
-Config files are live-edited through their symlinks, so changes are already in the repo working tree. Just commit:
+Symlink mode means changes you make through `~/.config/foo` land in the source repo immediately. Just commit:
 
 ```sh
-cd ~/.config/dotfiles
+cd ~/.config/dotfiles    # or: chezmoi cd
 git add <changed files>
 git commit -m "describe the change"
 git push

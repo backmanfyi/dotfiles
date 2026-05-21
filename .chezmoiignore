@@ -1,0 +1,14 @@
+README.md
+LICENSE
+Brewfile
+.gitignore
+.gitmodules
+docs
+docs/**
+scripts
+scripts/**
+.githooks
+.githooks/**
+.github
+.github/**
+setup.sh

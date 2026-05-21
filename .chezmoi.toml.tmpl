@@ -1,0 +1,15 @@
+sourceDir = "{{ .chezmoi.homeDir }}/.config/dotfiles"
+mode = "symlink"
+
+[diff]
+# Hide script bodies from chezmoi diff — they're often long and noisy.
+exclude = ["scripts"]
+
+[edit]
+apply = true
+watch = false
+
+[git]
+autoAdd = false
+autoCommit = false
+autoPush = false

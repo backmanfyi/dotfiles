@@ -13,6 +13,9 @@ window-decoration = true
 mouse-shift-capture = true
 macos-titlebar-style = hidden
 macos-window-shadow = false
+window-padding-x = 5
+window-padding-y = 5
+window-padding-balance = true
 
 # clickable links
 link-url = true
