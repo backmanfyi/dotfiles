@@ -71,16 +71,9 @@ FPATH="/opt/homebrew/share/zsh/site-functions:${FPATH}"
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#c4b8c0"
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-# Tab accepts one word of autosuggestion at a time, otherwise normal completion
-_autosuggest_or_complete() {
-  if [[ -n $POSTDISPLAY ]]; then
-    zle forward-word
-  else
-    zle expand-or-complete
-  fi
-}
-zle -N _autosuggest_or_complete
-bindkey '\t' _autosuggest_or_complete
+# Ctrl+F accepts one word of autosuggestion; Tab keeps zsh's default completion.
+# Right arrow accepts the whole suggestion (zsh-autosuggestions default).
+bindkey '^F' forward-word
 
 # pyenv (lazy-loaded)
 export PYENV_ROOT="$HOME/.pyenv"
