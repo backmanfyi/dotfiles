@@ -1,6 +1,6 @@
 [user]
 	name = Lars Backman
-	email = lars@backman.fyi
+	email = 2622072+backmanfyi@users.noreply.github.com
 	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILTvy5M5TUKRu82gZXhS195/GjB6phYJO0bzutx5sxCG
 
 [include]
