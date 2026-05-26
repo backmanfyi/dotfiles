@@ -10,6 +10,7 @@
 - Always read files without asking for permission
 - Always run `kubectl get` commands without asking
 - Always run read-only exploration commands (ls, cat, grep, find, etc.)
+- Always run read-only `gh` commands without asking (issue list/view, pr list/view/status/checks/diff, run list/view, workflow list/view, release list/view, repo view, auth status)
 
 ## Git Safety
 

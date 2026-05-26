@@ -38,6 +38,22 @@
       "Bash(tofu output:*)",
       "Bash(tofu version:*)",
       "Bash(tofu providers:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue status:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr status:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh workflow list:*)",
+      "Bash(gh workflow view:*)",
+      "Bash(gh release list:*)",
+      "Bash(gh release view:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh auth status:*)",
       "mcp__datadog-mcp__search_datadog_logs",
       "mcp__datadog-mcp__search_datadog_metrics",
       "mcp__datadog-mcp__search_datadog_monitors",
@@ -137,6 +153,14 @@
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
+    },
+    "linear": {
+      "type": "http",
+      "url": "https://mcp.linear.app/mcp"
+    },
+    "notion": {
+      "type": "http",
+      "url": "https://mcp.notion.com/mcp"
     },
     "kubernetes": {
       "command": "npx",
