@@ -63,14 +63,14 @@ Migration plan and rationale: [`docs/chezmoi-migration.md`](docs/chezmoi-migrati
 # 1. Xcode CLT (provides git)
 xcode-select --install
 
-# 2. Clone the repo to its pinned source location
+# 2. Clone the repo and run the bootstrap script
 git clone git@github.com:backmanfyi/dotfiles.git ~/.config/dotfiles
-
-# 3. Install chezmoi, point it at the cloned source, and apply
-sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply --source "$HOME/.config/dotfiles"
+bash ~/.config/dotfiles/setup.sh
 ```
 
-The `--source "$HOME/.config/dotfiles"` flag is required because `.chezmoi.toml.tmpl` pins `sourceDir` to that path — without it, chezmoi would clone to its default `~/.local/share/chezmoi` and then look for source state at `~/.config/dotfiles`, which would be empty.
+`setup.sh` installs chezmoi if it is not already present (via `brew` if available, otherwise the official installer into `~/.local/bin`), then runs `chezmoi init --apply --source ~/.config/dotfiles`.
+
+The `--source` flag is required because `.chezmoi.toml.tmpl` pins `sourceDir` to that path — without it, chezmoi would look for source state at `~/.local/share/chezmoi`, which would be empty.
 
 What `chezmoi init --apply` does:
 1. Renders `.chezmoi.toml.tmpl` → `~/.config/chezmoi/chezmoi.toml`

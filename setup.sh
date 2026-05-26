@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
-# This script has been retired. The dotfiles are now managed by chezmoi.
-#
-# Fresh machine:
-#   sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply backmanfyi/dotfiles
-#
-# Daily use:
-#   chezmoi update -v      # pull remote changes and apply
-#   chezmoi status         # show pending differences
-#   chezmoi edit FILE      # edit a managed file (auto-applies on save)
-#
-# Migration plan and rationale: docs/chezmoi-migration.md
+set -euo pipefail
 
-cat <<'EOF' >&2
-setup.sh has been retired. Use chezmoi instead.
+DOTFILES_DIR="${HOME}/.config/dotfiles"
+REPO="git@github.com:backmanfyi/dotfiles.git"
 
-  Fresh machine:
-    sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply backmanfyi/dotfiles
+# Install chezmoi if not present
+if ! command -v chezmoi >/dev/null 2>&1; then
+  if command -v brew >/dev/null 2>&1; then
+    brew install chezmoi
+  else
+    sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b "${HOME}/.local/bin"
+    export PATH="${HOME}/.local/bin:${PATH}"
+  fi
+fi
 
-  Existing machine:
-    chezmoi update -v
+# Clone the repo if not already present
+if [[ ! -d "${DOTFILES_DIR}/.git" ]]; then
+  git clone "${REPO}" "${DOTFILES_DIR}"
+fi
 
-See docs/chezmoi-migration.md for the migration details.
-EOF
-exit 1
+exec chezmoi init --apply --source "${DOTFILES_DIR}"
