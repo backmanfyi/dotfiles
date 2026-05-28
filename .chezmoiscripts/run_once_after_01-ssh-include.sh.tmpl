@@ -14,6 +14,8 @@ if [[ -f "${SYSTEM_SSH}" ]] && grep -qE '^[[:space:]]*Include[[:space:]]+~/.conf
   exit 0
 fi
 
+echo "==> Adding SSH config include to ~/.ssh/config"
 printf '\n# Managed dotfiles config — edit at ~/.config/dotfiles\n%s\n' "${MANAGED_INCLUDE}" >> "${SYSTEM_SSH}"
 chmod 600 "${SYSTEM_SSH}"
+echo "==> SSH config include added"
 {{ end -}}

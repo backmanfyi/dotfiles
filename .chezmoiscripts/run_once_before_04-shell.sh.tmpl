@@ -4,10 +4,13 @@ set -euo pipefail
 BREW_ZSH="/opt/homebrew/bin/zsh"
 
 if ! grep -qF "${BREW_ZSH}" /etc/shells 2>/dev/null; then
+  echo "==> Registering brew zsh in /etc/shells"
   echo "${BREW_ZSH}" | sudo tee -a /etc/shells > /dev/null
 fi
 
 if [[ "${SHELL:-}" != "${BREW_ZSH}" ]]; then
+  echo "==> Setting default shell to brew zsh"
   chsh -s "${BREW_ZSH}"
+  echo "==> Default shell updated — restart your terminal"
 fi
 {{ end -}}

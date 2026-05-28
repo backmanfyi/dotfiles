@@ -29,6 +29,8 @@ cat > "${PLIST}" <<EOF
 </plist>
 EOF
 
+echo "==> Installing chezmoi update-check launchd agent"
 launchctl unload "${PLIST}" 2>/dev/null || true
 launchctl load "${PLIST}"
+echo "==> Update-check agent installed (runs every 15 minutes)"
 {{ end -}}

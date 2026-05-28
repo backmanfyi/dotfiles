@@ -5,6 +5,7 @@ set -euo pipefail
 
 for f in "${HOME}/.zshrc" "${HOME}/.zshenv"; do
   if [[ -f "${f}" && ! -L "${f}" ]]; then
+    echo "==> Removing legacy ${f}"
     rm "${f}"
   fi
 done

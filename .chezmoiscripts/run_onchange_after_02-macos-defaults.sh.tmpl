@@ -2,6 +2,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "==> Applying macOS defaults"
+
 # Keyboard — fast key repeat, no smart-substitution noise.
 defaults write NSGlobalDomain KeyRepeat -int 2
 defaults write NSGlobalDomain InitialKeyRepeat -int 15
@@ -49,4 +51,5 @@ defaults write com.apple.screensaver askForPasswordDelay -int 0
 killall Finder 2>/dev/null || true
 killall Dock 2>/dev/null || true
 killall SystemUIServer 2>/dev/null || true
+echo "==> macOS defaults applied"
 {{ end -}}

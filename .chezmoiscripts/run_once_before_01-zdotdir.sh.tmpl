@@ -6,6 +6,8 @@ if grep -qE '^[[:space:]]*export[[:space:]]+ZDOTDIR=' /etc/zshenv 2>/dev/null; t
   exit 0
 fi
 
+echo "==> Configuring ZDOTDIR in /etc/zshenv"
 printf '\nexport XDG_CONFIG_HOME="$HOME/.config"\nexport ZDOTDIR="${XDG_CONFIG_HOME}/zsh"\n' \
   | sudo tee -a /etc/zshenv > /dev/null
+echo "==> ZDOTDIR configured — restart your shell"
 {{ end -}}
