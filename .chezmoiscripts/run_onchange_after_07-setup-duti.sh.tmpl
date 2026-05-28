@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Applies NvimOpen file associations via duti whenever nvim-open.duti changes.
+# Rebuild trigger — hash of duti config:
+# {{ include "dot_config/duti/nvim-open.duti" | sha256sum }}
+set -euo pipefail
+
+DUTI_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/duti/nvim-open.duti"
+
+if ! command -v duti >/dev/null 2>&1; then
+  echo "duti not found — run: brew install duti" >&2
+  exit 0
+fi
+
+# NvimOpen.app must be registered with Launch Services before duti can use its bundle ID.
+# Run lsregister in case the app was just built by the previous script.
+LSREG="/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+if [[ -d ~/Applications/NvimOpen.app ]]; then
+  "$LSREG" -f ~/Applications/NvimOpen.app
+fi
+
+duti -v "$DUTI_CONFIG"
+echo "NvimOpen file associations applied"

@@ -1,0 +1,14 @@
+# NvimOpen file associations
+# Applied by run_onchange_after_07-setup-duti.sh
+# Format: <bundle-id>  <UTI-or-extension>  <role>
+
+com.larsbackman.nvimopen    public.plain-text                        all
+com.larsbackman.nvimopen    public.comma-separated-values-text       all
+com.larsbackman.nvimopen    public.json                              all
+com.larsbackman.nvimopen    public.xml                               all
+com.larsbackman.nvimopen    public.shell-script                      all
+com.larsbackman.nvimopen    public.log                               all
+com.larsbackman.nvimopen    net.daringfireball.markdown              all
+com.larsbackman.nvimopen    yaml                                     all
+com.larsbackman.nvimopen    toml                                     all
+com.larsbackman.nvimopen    env                                      all

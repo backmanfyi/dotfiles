@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Builds NvimOpen.app via osacompile whenever the applescript or handler changes.
+# Rebuild triggers:
+# {{ include "scripts/NvimOpen.applescript" | sha256sum }}
+# {{ include "scripts/nvim-open.sh" | sha256sum }}
+# {{ include "scripts/nvim-open-plist.sh" | sha256sum }}
+set -euo pipefail
+
+SOURCE_DIR="{{ .chezmoi.sourceDir }}"
+APPLESCRIPT="$SOURCE_DIR/scripts/NvimOpen.applescript"
+PLIST_HELPER="$SOURCE_DIR/scripts/nvim-open-plist.sh"
+OUTPUT=~/Applications/NvimOpen.app
+LSREG="/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+
+mkdir -p ~/Applications
+
+# Compile AppleScript to .app bundle
+osacompile -o "$OUTPUT" "$APPLESCRIPT"
+
+# Patch Info.plist (bundle ID, LSUIElement, document types)
+bash "$PLIST_HELPER" "$OUTPUT"
+
+# Register with Launch Services
+"$LSREG" -f "$OUTPUT"
+
+echo "NvimOpen.app built and registered at $OUTPUT"
