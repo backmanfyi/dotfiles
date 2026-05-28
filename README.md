@@ -18,6 +18,11 @@ Migration plan and rationale: [`docs/chezmoi-migration.md`](docs/chezmoi-migrati
 - [How it works](#how-it-works)
 - [Shell](#shell)
 - [Tools](#tools)
+  - [NvimOpen](#nvimopen)
+  - [Neovim](#neovim)
+  - [tmux](#tmux)
+  - [git](#git)
+  - [Runtime version managers](#runtime-version-managers)
 - [Claude Code](#claude-code)
 - [Security](#security)
 - [CI/CD](#cicd)
@@ -40,9 +45,10 @@ Migration plan and rationale: [`docs/chezmoi-migration.md`](docs/chezmoi-migrati
 | `dot_config/private_ssh/` | SSH | Client config, 1Password agent (dir mode 0700) |
 | `dot_config/bat/` | bat | Syntax-highlighted `cat` replacement |
 | `dot_config/go/env` | Go | `GOPRIVATE`, toolchain env |
+| `dot_config/duti/` | duti | File association rules for NvimOpen |
 | `Brewfile` | Homebrew | Package manifest |
 | `dot_claude/` | Claude Code | CLAUDE.md, MCP servers, custom agents, hooks, skills, templates |
-| `scripts/` | — | Utility scripts (not deployed by chezmoi) |
+| `scripts/` | NvimOpen + utils | NvimOpen.app build scripts and miscellaneous utilities |
 
 ---
 
@@ -95,6 +101,8 @@ Restart your terminal when complete.
 | `after_03` | `run_onchange_after_03-aerospace-reload.sh.tmpl` | `aerospace reload-config` |
 | `after_04` | `run_once_after_04-accessibility.sh.tmpl` | Interactive Accessibility prompt (skips if AeroSpace already running) |
 | `after_05` | `run_onchange_after_05-install-update-launchd.sh.tmpl` | Installs the launchd agent that powers the tmux update indicator |
+| `after_06` | `run_onchange_after_06-build-nvim-open-app.sh.tmpl` | Builds NvimOpen.app via `make build` (re-runs when AppleScript or plist helper changes) |
+| `after_07` | `run_onchange_after_07-setup-duti.sh.tmpl` | Applies file associations via `make install` (re-runs when `nvim-open.duti` changes) |
 
 ### Manual follow-ups
 
@@ -179,6 +187,34 @@ Shell startup is kept fast deliberately:
 ---
 
 ## Tools
+
+### NvimOpen
+
+A lightweight macOS file handler that opens text and code files in Neovim inside a dedicated tmux session within the existing Ghostty window. Double-clicking a `.json`, `.go`, `.ts`, etc. file in Finder switches your current Ghostty/tmux client to a new session running `nvim`.
+
+Built as a minimal AppleScript `.app` (via `osacompile`) with a patched `Info.plist` that registers it as the `Owner` handler for common text and code UTIs. The Neovim icon is sourced from the Homebrew-installed `nvim.png` and converted to `.icns` at build time.
+
+**Files:**
+
+| File | Purpose |
+|---|---|
+| `scripts/NvimOpen.applescript` | AppleScript entry point — receives file paths and calls the handler script |
+| `scripts/nvim-open.sh` | Core handler — creates/reuses a tmux session, switches the active Ghostty client to it |
+| `scripts/nvim-open-plist.sh` | Patches `Info.plist` after `osacompile` (bundle ID, UTIs, icon, `LSUIElement`) |
+| `scripts/Makefile` | Build and install targets |
+| `dot_config/duti/nvim-open.duti` | duti association rules — system UTIs and file extensions |
+
+**Build manually:**
+
+```sh
+cd ~/.config/dotfiles/scripts
+make        # build + install (default)
+make build  # compile app, set icon, patch plist, register with Launch Services
+make install # apply duti file associations
+make clean  # remove ~/Applications/NvimOpen.app
+```
+
+`chezmoi update` rebuilds and reinstalls automatically when any of the source files change.
 
 ### Neovim
 
