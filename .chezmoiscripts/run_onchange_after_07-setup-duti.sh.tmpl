@@ -18,5 +18,20 @@ if [[ -d ~/Applications/NvimOpen.app ]]; then
   "$LSREG" -f ~/Applications/NvimOpen.app
 fi
 
-duti -v "$DUTI_CONFIG"
+# Run duti and filter out harmless dynamic-UTI double-resolution noise (dyn.ah62d...).
+# Real failures (named UTIs like public.json) are still shown.
+output=$(duti -v "$DUTI_CONFIG" 2>&1)
+filtered=$(echo "$output" | grep -v "dyn\." | grep -v "^$")
+if [[ -n "$filtered" ]]; then
+  echo "$filtered"
+fi
+
+# Surface any unexpected failures on named UTIs
+failures=$(echo "$output" | grep "^failed" | grep -v "dyn\.")
+if [[ -n "$failures" ]]; then
+  echo "duti errors:" >&2
+  echo "$failures" >&2
+  exit 1
+fi
+
 echo "NvimOpen file associations applied"
