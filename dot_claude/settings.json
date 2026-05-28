@@ -114,6 +114,7 @@
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true
   },
+  "preferredNotifChannel": "terminal_bell",
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true,
   "theme": "light-daltonized",
