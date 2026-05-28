@@ -2,13 +2,69 @@
 # Applied by run_onchange_after_07-setup-duti.sh
 # Format: <bundle-id>  <UTI-or-extension>  <role>
 
+# ── System UTIs (reliable, covers all files of this type) ───────────────────
 com.larsbackman.nvimopen    public.plain-text                        all
 com.larsbackman.nvimopen    public.comma-separated-values-text       all
 com.larsbackman.nvimopen    public.json                              all
 com.larsbackman.nvimopen    public.xml                               all
 com.larsbackman.nvimopen    public.shell-script                      all
 com.larsbackman.nvimopen    public.log                               all
+com.larsbackman.nvimopen    public.source-code                       all
+com.larsbackman.nvimopen    public.python-script                     all
+com.larsbackman.nvimopen    public.ruby-script                       all
+com.larsbackman.nvimopen    public.swift-source                      all
+com.larsbackman.nvimopen    public.css                               all
+com.larsbackman.nvimopen    public.html                              all
 com.larsbackman.nvimopen    net.daringfireball.markdown              all
+
+# ── Extensions (for types without reliable system UTIs) ─────────────────────
+
+# Config / data
 com.larsbackman.nvimopen    yaml                                     all
+com.larsbackman.nvimopen    yml                                      all
 com.larsbackman.nvimopen    toml                                     all
 com.larsbackman.nvimopen    env                                      all
+com.larsbackman.nvimopen    ini                                      all
+com.larsbackman.nvimopen    conf                                     all
+com.larsbackman.nvimopen    cfg                                      all
+com.larsbackman.nvimopen    properties                               all
+
+# Web
+com.larsbackman.nvimopen    ts                                       all
+com.larsbackman.nvimopen    tsx                                      all
+com.larsbackman.nvimopen    js                                       all
+com.larsbackman.nvimopen    jsx                                      all
+com.larsbackman.nvimopen    mjs                                      all
+com.larsbackman.nvimopen    cjs                                      all
+com.larsbackman.nvimopen    scss                                     all
+com.larsbackman.nvimopen    sass                                     all
+com.larsbackman.nvimopen    less                                     all
+com.larsbackman.nvimopen    svelte                                   all
+com.larsbackman.nvimopen    astro                                    all
+com.larsbackman.nvimopen    vue                                      all
+com.larsbackman.nvimopen    mdx                                      all
+com.larsbackman.nvimopen    graphql                                  all
+com.larsbackman.nvimopen    gql                                      all
+
+# Systems / compiled languages
+com.larsbackman.nvimopen    go                                       all
+com.larsbackman.nvimopen    rs                                       all
+com.larsbackman.nvimopen    kt                                       all
+com.larsbackman.nvimopen    kts                                      all
+com.larsbackman.nvimopen    java                                     all
+com.larsbackman.nvimopen    c                                        all
+com.larsbackman.nvimopen    h                                        all
+com.larsbackman.nvimopen    cpp                                      all
+com.larsbackman.nvimopen    hpp                                      all
+
+# Infrastructure / IaC
+com.larsbackman.nvimopen    tf                                       all
+com.larsbackman.nvimopen    tfvars                                   all
+com.larsbackman.nvimopen    hcl                                      all
+com.larsbackman.nvimopen    proto                                    all
+
+# Scripting / misc
+com.larsbackman.nvimopen    lua                                      all
+com.larsbackman.nvimopen    vim                                      all
+com.larsbackman.nvimopen    sql                                      all
+com.larsbackman.nvimopen    lock                                     all

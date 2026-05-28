@@ -28,7 +28,7 @@ pb_set_or_add bool ":LSUIElement" "true"
 "$PB" -c "Add :CFBundleDocumentTypes array" "$PLIST"
 "$PB" -c "Add :CFBundleDocumentTypes:0 dict" "$PLIST"
 "$PB" -c "Add :CFBundleDocumentTypes:0:CFBundleTypeRole string Editor" "$PLIST"
-"$PB" -c "Add :CFBundleDocumentTypes:0:LSHandlerRank string Alternate" "$PLIST"
+"$PB" -c "Add :CFBundleDocumentTypes:0:LSHandlerRank string Owner" "$PLIST"
 "$PB" -c "Add :CFBundleDocumentTypes:0:LSItemContentTypes array" "$PLIST"
 
 UTIS=(
@@ -39,6 +39,11 @@ UTIS=(
   public.shell-script
   public.log
   public.source-code
+  public.python-script
+  public.ruby-script
+  public.swift-source
+  public.css
+  public.html
   net.daringfireball.markdown
 )
 
