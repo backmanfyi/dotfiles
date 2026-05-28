@@ -16,9 +16,6 @@ zle-keymap-select () {
 }
 zle -N zle-keymap-select
 
-# Reverse search
-bindkey '^R' history-incremental-search-backward
-
 # Start tmux
 if [[ -t 1 && $TMUX = "" ]] then
   main_session_name="main"
@@ -33,7 +30,7 @@ fi
 alias vim='nvim'
 alias vi='nvim'
 alias vimdiff='nvim -d'
-alias vis='EDITOR=vim visudo -f'
+alias vis='EDITOR=nvim visudo -f'
 # Remap old commands
 alias l='eza -l'
 alias la='eza -al'
@@ -94,17 +91,42 @@ else
 fi
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
 complete -o nospace -C /opt/homebrew/bin/tofu tofu
-source <(pnpm completion zsh)
-source <(op completion zsh)
-source <(volta completions zsh)
+
+# Cache helper: regenerates only when the binary is newer than the cached output.
+# Usage: _zsh_cache <cache-name> <binary-for-mtime-check> <cmd> [args...]
+_zsh_cache() {
+  local name="$1" bin="$2"; shift 2
+  local cache="$ZSH_CACHE_DIR/init_${name}.zsh"
+  local bin_path && bin_path=$(whence -p "$bin" 2>/dev/null)
+  if [[ ! -f "$cache" ]] || { [[ -n "$bin_path" ]] && [[ "$bin_path" -nt "$cache" ]]; }; then
+    "$@" > "$cache" 2>/dev/null
+  fi
+  source "$cache"
+}
+
+# Completions: cache to files, regenerate when binary changes
+_zsh_completion_cache() {
+  local name="$1" bin="$2"; shift 2
+  local cache="$ZSH_CACHE_DIR/completion_${name}.zsh"
+  local bin_path && bin_path=$(whence -p "$bin" 2>/dev/null)
+  if [[ ! -f "$cache" ]] || { [[ -n "$bin_path" ]] && [[ "$bin_path" -nt "$cache" ]]; }; then
+    "$@" > "$cache" 2>/dev/null
+  fi
+  source "$cache"
+}
+
+_zsh_completion_cache pnpm pnpm   pnpm completion zsh
+_zsh_completion_cache op   op     op completion zsh
+_zsh_completion_cache volta volta volta completions zsh
 source /opt/homebrew/Caskroom/gcloud-cli/latest/google-cloud-sdk/completion.zsh.inc
-eval "$(zoxide init zsh)"
+
+_zsh_cache zoxide  zoxide  zoxide init zsh
 alias j='z'
-eval "$(direnv hook zsh)"
-eval "$(atuin init zsh --disable-up-arrow)"
+_zsh_cache direnv  direnv  direnv hook zsh
+_zsh_cache atuin   atuin   atuin init zsh --disable-up-arrow
 
 [[ -f "${ZDOTDIR}/.zshrc_local" ]] && source "${ZDOTDIR}/.zshrc_local"
-eval "$(starship init zsh)"
+_zsh_cache starship starship starship init zsh
 export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
 
 [[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
