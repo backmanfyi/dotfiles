@@ -38,6 +38,7 @@ UTIS=(
   public.xml
   public.shell-script
   public.log
+  com.apple.log
   public.source-code
   public.python-script
   public.ruby-script

@@ -9,6 +9,7 @@ com.larsbackman.nvimopen    public.json                              all
 com.larsbackman.nvimopen    public.xml                               all
 com.larsbackman.nvimopen    public.shell-script                      all
 com.larsbackman.nvimopen    public.log                               all
+com.larsbackman.nvimopen    com.apple.log                            all
 com.larsbackman.nvimopen    public.source-code                       all
 com.larsbackman.nvimopen    public.python-script                     all
 com.larsbackman.nvimopen    public.ruby-script                       all
@@ -65,4 +66,5 @@ com.larsbackman.nvimopen    proto                                    all
 com.larsbackman.nvimopen    lua                                      all
 com.larsbackman.nvimopen    vim                                      all
 com.larsbackman.nvimopen    sql                                      all
+com.larsbackman.nvimopen    log                                      all
 com.larsbackman.nvimopen    lock                                     all
