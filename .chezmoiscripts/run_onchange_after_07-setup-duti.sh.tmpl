@@ -21,13 +21,13 @@ fi
 # Run duti and filter out harmless dynamic-UTI double-resolution noise (dyn.ah62d...).
 # Real failures (named UTIs like public.json) are still shown.
 output=$(duti -v "$DUTI_CONFIG" 2>&1)
-filtered=$(echo "$output" | grep -v "dyn\." | grep -v "^$")
+filtered=$(echo "$output" | grep -v "dyn\." | grep -v "^$" || true)
 if [[ -n "$filtered" ]]; then
   echo "$filtered"
 fi
 
 # Surface any unexpected failures on named UTIs
-failures=$(echo "$output" | grep "^failed" | grep -v "dyn\.")
+failures=$(echo "$output" | grep "^failed" | grep -v "dyn\." || true)
 if [[ -n "$failures" ]]; then
   echo "duti errors:" >&2
   echo "$failures" >&2
