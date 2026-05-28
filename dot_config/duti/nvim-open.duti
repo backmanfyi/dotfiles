@@ -13,8 +13,6 @@ com.larsbackman.nvimopen    public.source-code                       all
 com.larsbackman.nvimopen    public.python-script                     all
 com.larsbackman.nvimopen    public.ruby-script                       all
 com.larsbackman.nvimopen    public.swift-source                      all
-com.larsbackman.nvimopen    public.css                               all
-com.larsbackman.nvimopen    public.html                              all
 com.larsbackman.nvimopen    net.daringfireball.markdown              all
 
 # ── Extensions (for types without reliable system UTIs) ─────────────────────

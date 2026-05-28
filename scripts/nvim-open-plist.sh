@@ -42,14 +42,30 @@ UTIS=(
   public.python-script
   public.ruby-script
   public.swift-source
-  public.css
-  public.html
   net.daringfireball.markdown
 )
 
 i=0
 for uti in "${UTIS[@]}"; do
   "$PB" -c "Add :CFBundleDocumentTypes:0:LSItemContentTypes:$i string $uti" "$PLIST"
+  i=$((i + 1))
+done
+
+# ── Alternate document types (appear in "Open With", not default) ────────────
+# web types: NvimOpen shows as an option but won't claim the browser role
+"$PB" -c "Add :CFBundleDocumentTypes:1 dict" "$PLIST"
+"$PB" -c "Add :CFBundleDocumentTypes:1:CFBundleTypeRole string Editor" "$PLIST"
+"$PB" -c "Add :CFBundleDocumentTypes:1:LSHandlerRank string Alternate" "$PLIST"
+"$PB" -c "Add :CFBundleDocumentTypes:1:LSItemContentTypes array" "$PLIST"
+
+ALT_UTIS=(
+  public.html
+  public.css
+)
+
+i=0
+for uti in "${ALT_UTIS[@]}"; do
+  "$PB" -c "Add :CFBundleDocumentTypes:1:LSItemContentTypes:$i string $uti" "$PLIST"
   i=$((i + 1))
 done
 
