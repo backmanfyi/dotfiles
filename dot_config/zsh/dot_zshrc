@@ -41,6 +41,7 @@ alias ls='eza'
 alias tree='eza -T'
 alias t='eza -T'
 alias cat='bat'
+alias lg='lazygit'
 
 # SSH
 export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
@@ -92,6 +93,11 @@ else
   compinit -C
 fi
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
+complete -o nospace -C /opt/homebrew/bin/tofu tofu
+source <(pnpm completion zsh)
+source <(op completion zsh)
+source <(volta completions zsh)
+source /opt/homebrew/Caskroom/gcloud-cli/latest/google-cloud-sdk/completion.zsh.inc
 eval "$(zoxide init zsh)"
 alias j='z'
 eval "$(direnv hook zsh)"
