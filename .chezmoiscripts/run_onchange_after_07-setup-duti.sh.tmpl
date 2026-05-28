@@ -4,34 +4,9 @@
 # {{ include "dot_config/duti/nvim-open.duti" | sha256sum }}
 set -euo pipefail
 
-DUTI_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/duti/nvim-open.duti"
-
 if ! command -v duti >/dev/null 2>&1; then
   echo "duti not found — run: brew install duti" >&2
   exit 0
 fi
 
-# NvimOpen.app must be registered with Launch Services before duti can use its bundle ID.
-# Run lsregister in case the app was just built by the previous script.
-LSREG="/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
-if [[ -d ~/Applications/NvimOpen.app ]]; then
-  "$LSREG" -f ~/Applications/NvimOpen.app
-fi
-
-# Run duti and filter out harmless dynamic-UTI double-resolution noise (dyn.ah62d...).
-# Real failures (named UTIs like public.json) are still shown.
-output=$(duti -v "$DUTI_CONFIG" 2>&1)
-filtered=$(echo "$output" | grep -v "dyn\." | grep -v "^$" || true)
-if [[ -n "$filtered" ]]; then
-  echo "$filtered"
-fi
-
-# Surface any unexpected failures on named UTIs
-failures=$(echo "$output" | grep "^failed" | grep -v "dyn\." || true)
-if [[ -n "$failures" ]]; then
-  echo "duti errors:" >&2
-  echo "$failures" >&2
-  exit 1
-fi
-
-echo "NvimOpen file associations applied"
+make -C "{{ .chezmoi.sourceDir }}/scripts" install

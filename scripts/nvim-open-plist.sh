@@ -19,6 +19,7 @@ pb_set_or_add string ":CFBundleIdentifier"        "com.larsbackman.nvimopen"
 pb_set_or_add string ":CFBundleName"              "NvimOpen"
 pb_set_or_add string ":CFBundleVersion"           "1.0.0"
 pb_set_or_add string ":CFBundleShortVersionString" "1.0.0"
+pb_set_or_add string ":CFBundleIconFile"           "nvim"
 
 # ── Hide from Dock / menu bar (LSUIElement) ──────────────────────────────────
 pb_set_or_add bool ":LSUIElement" "true"
