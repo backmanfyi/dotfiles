@@ -84,11 +84,15 @@ pyenv() {
 
 autoload bashcompinit && bashcompinit
 autoload -Uz compinit
-if [ $(date +'%j') != $(stat -f '%Sm' -t '%j' ${ZDOTDIR:-~}/.zcompdump 2>/dev/null) ]; then
-  compinit
-else
-  compinit -C
-fi
+# -C skips the FPATH security audit; -u suppresses insecure-directory warnings.
+# Run `compinit-rebuild` after installing new tools to pick up new completions.
+compinit -C -u -d "$ZSH_CACHE_DIR/.zcompdump"
+
+compinit-rebuild() {
+  rm -f "$ZSH_CACHE_DIR/.zcompdump"
+  compinit -u -d "$ZSH_CACHE_DIR/.zcompdump"
+  echo "Completions rebuilt"
+}
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
 complete -o nospace -C /opt/homebrew/bin/tofu tofu
 
