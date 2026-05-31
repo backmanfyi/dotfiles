@@ -41,6 +41,14 @@ Claude Code does **not** read MCP server definitions from `~/.claude/settings.js
 - Reconciler: `.chezmoiscripts/run_onchange_after_08-claude-mcp-sync.sh.tmpl` — calls `claude mcp add-json --scope user` per entry and tracks managed names in `~/.claude/.chezmoi-mcp-managed` so removals propagate
 - Editing the JSON and running `chezmoi apply` is the supported workflow; never hand-edit `~/.claude.json`
 
+### GitHub access — no MCP server
+
+Do **not** add a `github` MCP server. Claude shells out to `gh` directly:
+
+- Git protocol (clone/push/pull) uses the 1Password SSH agent
+- REST/GraphQL ops use the `gh` CLI, which stores its token in the macOS Keychain via `gh auth login --web` (not on the filesystem)
+- This avoids needing a token in env, a podman container for the MCP server, and any 1Password env-file plumbing for GitHub specifically
+
 ### Chezmoi script naming
 
 `run_once_*` runs once per machine. `run_onchange_*` re-runs when the rendered script content changes — embed any state you want to track into the template so changes trigger re-runs.
