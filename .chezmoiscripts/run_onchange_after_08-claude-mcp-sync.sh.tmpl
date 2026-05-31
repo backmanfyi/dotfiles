@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Reconcile user-scoped Claude Code MCP servers with the desired state
+# defined in .chezmoidata/claude.json. The embedded JSON makes this script
+# re-run whenever the desired state changes.
+set -euo pipefail
+
+if ! command -v claude >/dev/null 2>&1; then
+  echo "claude CLI not found; skipping MCP server sync."
+  exit 0
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq not found; skipping MCP server sync."
+  exit 0
+fi
+
+DESIRED_JSON=$(cat <<'JSON'
+{{ .claude.mcpServers | toJson }}
+JSON
+)
+
+state_dir="$HOME/.claude"
+state_file="$state_dir/.chezmoi-mcp-managed"
+mkdir -p "$state_dir"
+
+desired_names=$(echo "$DESIRED_JSON" | jq -r 'keys[]' | sort)
+
+if [[ -f "$state_file" ]]; then
+  previously_managed=$(sort "$state_file")
+  to_remove=$(comm -23 <(echo "$previously_managed") <(echo "$desired_names") || true)
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    echo "Removing user-scope MCP server: $name"
+    claude mcp remove --scope user "$name" >/dev/null 2>&1 || true
+  done <<< "$to_remove"
+fi
+
+while IFS= read -r name; do
+  [[ -z "$name" ]] && continue
+  server_json=$(echo "$DESIRED_JSON" | jq -c --arg n "$name" '.[$n]')
+  echo "Syncing user-scope MCP server: $name"
+  claude mcp remove --scope user "$name" >/dev/null 2>&1 || true
+  claude mcp add-json --scope user "$name" "$server_json" >/dev/null
+done <<< "$desired_names"
+
+echo "$desired_names" > "$state_file"
