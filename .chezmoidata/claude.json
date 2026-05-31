@@ -3,7 +3,7 @@
     "mcpServers": {
       "github": {
         "type": "stdio",
-        "command": "docker",
+        "command": "podman",
         "args": [
           "run",
           "-i",

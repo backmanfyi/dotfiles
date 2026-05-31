@@ -137,5 +137,22 @@ export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
 export PATH="$VOLTA_HOME/bin:$PATH"
 source ~/.safe-chain/scripts/init-posix.sh # Safe-chain Zsh initialization script
 
+# 1Password-backed env injection. Any file at ${XDG_CONFIG_HOME}/op/env/<tool>.env
+# turns `<tool>` into a function that runs `op run --env-file=… -- <tool>`,
+# so the resolved secret values only exist in that process's environment.
+# Bypass with `command <tool>` or `\<tool>`.
+_op_register_wrappers() {
+  local env_dir="${XDG_CONFIG_HOME}/op/env"
+  [[ -d "$env_dir" ]] || return 0
+  local env_file tool
+  for env_file in "$env_dir"/*.env(N); do
+    tool="${env_file:t:r}"
+    command -v "$tool" >/dev/null 2>&1 || continue
+    eval "${tool}() { command op run --env-file=${(q)env_file} -- ${tool} \"\$@\"; }"
+  done
+}
+_op_register_wrappers
+unset -f _op_register_wrappers
+
 # zsh-syntax-highlighting must be sourced last
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
