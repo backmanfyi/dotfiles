@@ -41,6 +41,12 @@
 - Find root causes, no temporary fixes
 - Only touch code relevant to the task - avoid introducing bugs
 
+## Environment & tooling
+
+- **Secrets**: fetch at runtime from 1Password via the `op` CLI. Convention: vault `env`, item type Password, item name = env-var name, reference `op://env/<VAR>/password`. Per-tool env files at `~/.config/op/env/<tool>.env` are auto-wrapped by zshrc into `op run --env-file=… -- <tool>` functions; bypass with `command <tool>`. Never write secret values into any tracked file — no plaintext API keys, tokens, or credentials in `.env`, shell rc, chezmoi templates, or anywhere else on disk.
+- **System packages**: required CLI tools must be declared in `~/.config/dotfiles/Brewfile`. If a script depends on it, add `brew "<pkg>"` — don't paper over absence with `command -v` checks.
+- **Containers**: use `podman` for local container workflows. Do not introduce `docker` commands; when porting recipes, swap the binary and verify the flags.
+
 ## Code Style
 
 - Clear, readable variable and function names instead of comments (clean and straightforward code)
