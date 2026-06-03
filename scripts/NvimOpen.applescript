@@ -5,7 +5,7 @@
 on open fileList
     repeat with theFile in fileList
         set filePath to POSIX path of theFile
-        do shell script "/Users/larsbackman/.config/dotfiles/scripts/nvim-open.sh " & quoted form of filePath
+        do shell script "$HOME/.config/dotfiles/scripts/nvim-open.sh " & quoted form of filePath
     end repeat
 end open
 
