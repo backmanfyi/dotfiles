@@ -67,6 +67,7 @@
 
 - Keep explanations concise - bullet points over paragraphs
 - Skip obvious context I already know
+- When citing a source (blog post, doc, repo, article), embed the URL as an inline markdown hyperlink at the point of mention — e.g. `[Block's manifesto](https://block.xyz/...)`. A trailing Sources section is fine as an index, but it must not be the only place URLs appear.
 
 ## Skill reminder hook
 
