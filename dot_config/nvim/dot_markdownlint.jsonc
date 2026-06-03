@@ -1,0 +1,4 @@
+{
+  // Line length — too noisy for prose markdown.
+  "MD013": false
+}

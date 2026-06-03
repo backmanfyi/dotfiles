@@ -15,19 +15,50 @@ return {
       ---@type lspconfig.options
       servers = {
         basedpyright = {},
+        eslint = {
+          root_dir = function(fname)
+            local root = vim.fs.root(fname, {
+              "eslint.config.js",
+              "eslint.config.mjs",
+              "eslint.config.cjs",
+              "eslint.config.ts",
+              "eslint.config.mts",
+              "eslint.config.cts",
+              ".eslintrc",
+              ".eslintrc.js",
+              ".eslintrc.cjs",
+              ".eslintrc.json",
+              ".eslintrc.yaml",
+              ".eslintrc.yml",
+              "package.json",
+            })
+            if not root then return nil end
+            if vim.uv.fs_stat(root .. "/node_modules/eslint") then
+              return root
+            end
+            return nil
+          end,
+        },
       },
     },
   },
 
-  { import = "lazyvim.plugins.extras.lang.docker" },
-  { import = "lazyvim.plugins.extras.lang.git" },
-  { import = "lazyvim.plugins.extras.lang.go" },
-  { import = "lazyvim.plugins.extras.lang.terraform" },
-  { import = "lazyvim.plugins.extras.lang.toml" },
-  { import = "lazyvim.plugins.extras.lang.typescript" },
-  { import = "lazyvim.plugins.extras.lang.yaml" },
-
   -- Silence "attempt to call field setup" warning from LazyVim's default dap spec
   -- https://stackoverflow.com/questions/77495184
   { "mfussenegger/nvim-dap", config = function() end },
+
+  {
+    "mfussenegger/nvim-lint",
+    optional = true,
+    opts = {
+      linters = {
+        ["markdownlint-cli2"] = {
+          prepend_args = {
+            "--config",
+            vim.fn.stdpath("config") .. "/.markdownlint.jsonc",
+          },
+        },
+      },
+    },
+  },
 }
