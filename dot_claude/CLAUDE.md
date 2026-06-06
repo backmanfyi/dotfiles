@@ -1,78 +1,48 @@
 # Personal Claude Code Preferences
 
-## About Me
+## Hard rules
 
-- Platform Engineer / Infrastructure Engineer + Full-stack TypeScript developer
-- Focus: IaC, Kubernetes, cloud infrastructure, DevOps, Astro/React, Cloudflare Workers
+- NEVER push to `main`/`master`. Work on a `<type>/<short-description>` branch (e.g. `fix/auth-bug`, `feat/new-api`).
+- Ask before any `git push`.
+- Secrets: fetch at runtime from 1Password via `op`; never write secret values to disk (no plaintext in `.env`, shell rc, or chezmoi templates).
+- Containers: use `podman`, never `docker`.
+- Required CLI tools must be declared in the Brewfile — don't paper over absence with `command -v` checks.
+- Commit messages: short, no AI boilerplate (no emoji, no "Generated with Claude Code" footer, no Co-Authored-By).
 
-## Permissions - Auto-Allow
+## Permissions — auto-allow (no need to ask)
 
-- Always read files without asking for permission
-- Always run `kubectl get` commands without asking
-- Always run read-only exploration commands (ls, cat, grep, find, etc.)
-- Always run read-only `gh` commands without asking (issue list/view, pr list/view/status/checks/diff, run list/view, workflow list/view, release list/view, repo view, auth status)
+- Read any file.
+- Read-only exploration: `ls`, `cat`, `grep`, `find`, etc.
+- `kubectl get`.
+- Read-only `gh`: issue list/view, pr list/view/status/checks/diff, run list/view, workflow list/view, release list/view, repo view, auth status.
 
-## Git Safety
+## Response style
 
-- NEVER push to main or master branches
-- Always create feature branches for changes
-- Always ask before any git push operation
-- Commit messages: short and concise, no AI-generated boilerplate (skip the emoji, "Generated with Claude Code" footer, and Co-Authored-By lines)
-- Branch naming: `<type>/<short-description>` (e.g., `fix/auth-bug`, `feat/new-api`)
+Default to the shortest answer that fully resolves the question; expand only when I ask.
 
-## Workflow
+- Lead with the answer. No preamble ("Sure", "Great question"), no closing summary restating what you did, no recapping my request back to me.
+- Simple/factual → one line or 1–3 sentences. Complex/open-ended → as long as needed, in bullets.
+- Cap routine answers at ~6 bullets / ~150 words unless I ask for more.
+- Never agree reflexively ("You're absolutely right"). If I'm wrong, say so.
+- Override: "deep dive" / "explain fully" / "verbose" lifts these caps.
 
-1. Read the codebase for relevant files and plan the work
-2. For multi-step tasks, create a GitHub issue to track it: `gh issue create --title "..." --label "..."`
-3. Check in with me to verify the plan before starting work
-4. Work through the steps, giving high-level explanations at each milestone
-5. Close the issue when the PR merges: `gh issue close <number>`
-6. Use `gh issue list` to review outstanding work at the start of a session
+## Sourcing & citations
 
-(Issue label sets are repo-specific — see each project's CLAUDE.md.)
+IMPORTANT: when I ask you to research something, or you pull information from the web or external docs/blogs/repos, cite it IEEE-style:
 
-## Implementation Approach
+- Inline bracketed numeral at the point of mention — "…as Block describes [1]". Reuse the same number for repeated cites of one source.
+- End the response with a numbered References list; each entry carries the full URL: `[1] Org, "Title," https://…`.
+- No real URL for a claim? Say so and label it unverified from training knowledge — never invent a citation.
+- Everyday answers derived from the codebase don't need citations.
 
-- ALWAYS present multiple options/approaches before starting any implementation
-- Explain trade-offs for each option
-- Wait for my selection before proceeding with code changes
-- When there are architectural decisions, list at least 2-3 alternatives
-- Keep changes as simple as possible - minimal code impact
-- Find root causes, no temporary fixes
-- Only touch code relevant to the task - avoid introducing bugs
+## Working style
 
-## Environment & tooling
+- Before implementing anything non-trivial, present 2–3 approaches with trade-offs and wait for my pick.
+- For tracked, multi-step work: open a GitHub issue (`gh issue create`), confirm the plan with me, then close it when the PR merges (`gh issue close <n>`). Skip the ceremony for throwaway tasks. (Label sets are repo-specific — see the project's CLAUDE.md.)
+- Touch only files relevant to the task; no unrequested refactors. Fix root causes, not symptoms.
+- Summarize at each milestone that changes files.
+- Delegate specialist work to the matching subagent — they own the detailed conventions: TypeScript/Astro/React/Workers → `typescript-expert`; Terraform/infra → `terraform-expert`; tests (Vitest/Playwright) → `testing-expert`; plus the other `*-expert` agents as relevant. Let linters/`tsc` enforce mechanical style.
 
-- **Secrets**: fetch at runtime from 1Password via the `op` CLI. Convention: vault `env`, item type Password, item name = env-var name, reference `op://env/<VAR>/password`. Per-tool env files at `~/.config/op/env/<tool>.env` are auto-wrapped by zshrc into `op run --env-file=… -- <tool>` functions; bypass with `command <tool>`. Never write secret values into any tracked file — no plaintext API keys, tokens, or credentials in `.env`, shell rc, chezmoi templates, or anywhere else on disk.
-- **System packages**: required CLI tools must be declared in `~/.config/dotfiles/Brewfile`. If a script depends on it, add `brew "<pkg>"` — don't paper over absence with `command -v` checks.
-- **Containers**: use `podman` for local container workflows. Do not introduce `docker` commands; when porting recipes, swap the binary and verify the flags.
+## About me
 
-## Code Style
-
-- Clear, readable variable and function names instead of comments (clean and straightforward code)
-- Only add comments for non-obvious business logic or "why" explanations
-- NO lazy type workarounds - add proper enum values instead of `| string`, extend interfaces properly instead of using `any` or type assertions
-
-## TypeScript
-
-- Strict mode always — no `any`; use `unknown` with type narrowing instead
-- `const` over `let`, never `var`
-- `async/await` over `.then()` chains
-- Named exports preferred; default exports only for Astro pages/layouts
-- Zod for runtime validation at system boundaries (API inputs, env vars)
-- pnpm for package management — never npm or yarn in JS/TS projects
-- vitest for unit tests; Playwright for E2E. The exact `pnpm` invocation depends on whether the project uses Turborepo or a single package — check the project's CLAUDE.md.
-
-## Communication
-
-- Keep explanations concise - bullet points over paragraphs
-- Skip obvious context I already know
-- When citing a source (blog post, doc, repo, article), embed the URL as an inline markdown hyperlink at the point of mention — e.g. `[Block's manifesto](https://block.xyz/...)`. A trailing Sources section is fine as an index, but it must not be the only place URLs appear.
-
-## Skill reminder hook
-
-The user-level `PreToolUse` hook on `Bash` prints a reminder when it sees `git push` or `gh pr create` in a command, nudging toward the project's `git-push` / `git-pr-create` skills. **It does not block — the underlying command still runs.** Treat it as a prompt, not a guardrail.
-
-## Outbound MCP write hook
-
-The user-level `PreToolUse` hook on Fastmail/Slack send/canvas/delete tools logs every outbound write to `~/.claude/audit.log` and prints a lethal-trifecta reminder. Reaches every Claude Code session, not just one project. Warn-only today; can be graduated to `exit 2` (block) if an incident occurs.
+Platform / infrastructure engineer + full-stack TypeScript developer — IaC, Kubernetes, cloud, DevOps, Astro/React, Cloudflare Workers.
