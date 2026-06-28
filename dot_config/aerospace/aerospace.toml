@@ -45,14 +45,28 @@ automatically-unhide-macos-hidden-apps = false
 # even when they are invisible.
 # This config option is only available since 'config-version = 2'
 # Fallback value (if you omit the key): persistent-workspaces = []
-persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B",
-                         "C", "D", "E", "F", "G", "I", "M", "N", "O", "P", "Q",
-                         "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
 # A callback that runs every time binding mode changes
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode
 on-mode-changed = []
+
+# Pin workspaces to monitors. The workspace pool is shared across monitors and
+# defaults to 'main'; this splits 1-5 onto the external display and 6-9 onto the
+# built-in. Monitor patterns are case-insensitive regex substrings on the display
+# name; the array fallback ('main') keeps a workspace usable when laptop-only.
+# See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
+[workspace-to-monitor-force-assignment]
+    1 = ['LG HDR WQHD', 'main']
+    2 = ['LG HDR WQHD', 'main']
+    3 = ['LG HDR WQHD', 'main']
+    4 = ['LG HDR WQHD', 'main']
+    5 = ['LG HDR WQHD', 'main']
+    6 = ['built-in retina', 'main']
+    7 = ['built-in retina', 'main']
+    8 = ['built-in retina', 'main']
+    9 = ['built-in retina', 'main']
 
 # Possible values: (qwerty|dvorak|colemak)
 # See https://nikitabobko.github.io/AeroSpace/guide#key-mapping
