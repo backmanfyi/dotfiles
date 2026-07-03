@@ -43,6 +43,18 @@ IMPORTANT: when I ask you to research something, or you pull information from th
 - Summarize at each milestone that changes files.
 - Delegate specialist work to the matching subagent — they own the detailed conventions: TypeScript/Astro/React/Workers → `typescript-expert`; Terraform/infra → `terraform-expert`; tests (Vitest/Playwright) → `testing-expert`; plus the other `*-expert` agents as relevant. Let linters/`tsc` enforce mechanical style.
 
+## Memory hygiene
+
+Conventions for the file-based memory under `~/.claude/projects/<project>/memory/` (the harness injects `MEMORY.md` each session). Keep the spec's frontmatter/typing rules; these add lifecycle discipline:
+
+- **The `description:` field is the retrieval API**: Claude's memory loader picks which topic files to load from each file's *filename + description only* (it does not read bodies or follow `[[wikilinks]]`). So write every description as a complete, self-contained claim carrying the words you'd search for — not a vague label.
+- **Frontmatter schema**: `name` (= filename slug, underscores) · `description` (the retrieval cue above) · `metadata: { type, last_verified: YYYY-MM-DD, originSessionId }`. Add `stale: true` under metadata when `last_verified` is old *and* the fact is a moving-target snapshot. `last_verified` is when the fact was last confirmed against reality — not the edit date.
+- **Promotion-to-pointer**: when a memory grows into a full reference (design system, runbook, discovery doc), move the detail into a repo doc or skill and shrink the memory file to a one-line pointer. Memory holds *what changed and why*, not the full reference. Prefer pointing at an external SSOT (Notion, Linear, a repo doc) over caching values that can drift.
+- **Supersede, don't silently delete**: when one memory replaces another, leave a `superseded_by: [[successor]]` breadcrumb in the old file rather than deleting it out from under any linking file.
+- **Date the index**: every `MEMORY.md` line ends with the content's `(YYYY-MM)`; bump it when you edit the file, and tag `(YYYY-MM, unverified since)` for dated snapshots of moving situations so staleness is visible at a glance.
+- **Reorganize on request**: on "reorganize memory", dedupe, merge related entries, split overloaded files, re-sort, fix index hooks that contradict their file body, reconcile index↔files 1:1 (no orphans/dangling), and re-verify any memory asserting a still-open TODO or a dated/`stale` state.
+- **Routing/instructions go here, not in `MEMORY.md`**: `MEMORY.md` is a pure index (one line per memory) — recall logic and conventions live in this file. Don't build cron/rotation rigs; the native auto-memory + on-request reorganize is enough.
+
 ## About me
 
 Platform / infrastructure engineer + full-stack TypeScript developer — IaC, Kubernetes, cloud, DevOps, Astro/React, Cloudflare Workers.
