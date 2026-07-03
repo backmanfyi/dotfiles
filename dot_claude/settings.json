@@ -125,8 +125,9 @@
     "gopls-lsp@claude-plugins-official": true
   },
   "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "theme": "light-daltonized",
   "preferredNotifChannel": "terminal_bell",
   "skipAutoPermissionPrompt": true,
-  "skipWorkflowUsageWarning": true
+  "tui": "fullscreen"
 }
