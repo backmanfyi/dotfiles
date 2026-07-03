@@ -33,6 +33,10 @@
         "type": "http",
         "url": "https://mcp.datadoghq.eu/api/unstable/mcp-server/mcp"
       },
+      "fastmail": {
+        "type": "http",
+        "url": "https://api.fastmail.com/mcp"
+      },
       "linear": {
         "type": "http",
         "url": "https://mcp.linear.app/mcp"
