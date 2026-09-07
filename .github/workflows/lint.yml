@@ -66,7 +66,7 @@ jobs:
       - name: Source-state directories exist
         run: |
           missing=0
-          configs=("aerospace" "bat" "ghostty" "git" "go" "nvim" "private_ssh" "starship" "tmux")
+          configs=("bat" "ghostty" "git" "go" "nvim" "private_ssh" "starship" "tmux")
           for config in "${configs[@]}"; do
             if [[ ! -e "dot_config/${config}" ]]; then
               echo "MISSING: dot_config/${config}"

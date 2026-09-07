@@ -39,7 +39,6 @@ Migration plan and rationale: [`docs/chezmoi-migration.md`](docs/chezmoi-migrati
 | `dot_config/nvim/` | Neovim (LazyVim) | Editor |
 | `dot_config/tmux/` | tmux | Terminal multiplexer |
 | `dot_config/ghostty/` | Ghostty | Terminal emulator |
-| `dot_config/aerospace/` | AeroSpace | Tiling window manager |
 | `dot_config/git/` | git | Version control, signing, aliases |
 | `dot_config/starship/` | Starship | Shell prompt |
 | `dot_config/private_ssh/` | SSH | Client config, 1Password agent (dir mode 0700) |
@@ -82,7 +81,7 @@ What `chezmoi init --apply` does:
 1. Renders `.chezmoi.toml.tmpl` → `~/.config/chezmoi/chezmoi.toml`
 2. Runs the `run_once_before_*` scripts (ZDOTDIR, Homebrew, brew bundle, shell, legacy cleanup)
 3. Symlinks `~/.config/*` and `~/.claude/*` back into the source dir
-4. Runs the `run_onchange_*` and `run_once_after_*` scripts (SSH Include, macOS defaults, AeroSpace reload, Accessibility prompt, launchd update-indicator)
+4. Runs the `run_onchange_*` and `run_once_after_*` scripts (SSH Include, macOS defaults, launchd update-indicator)
 
 Restart your terminal when complete.
 
@@ -98,8 +97,6 @@ Restart your terminal when complete.
 | files | (chezmoi) | Symlinks `~/.config/*` and `~/.claude/*` into the source dir |
 | `after_01` | `run_once_after_01-ssh-include.sh.tmpl` | Adds `Include ~/.config/ssh/config` to `~/.ssh/config` |
 | `after_02` | `run_onchange_after_02-macos-defaults.sh.tmpl` | Fast key repeat, Finder, Dock, screenshots, etc. |
-| `after_03` | `run_onchange_after_03-aerospace-reload.sh.tmpl` | `aerospace reload-config` |
-| `after_04` | `run_once_after_04-accessibility.sh.tmpl` | Interactive Accessibility prompt (skips if AeroSpace already running) |
 | `after_05` | `run_onchange_after_05-install-update-launchd.sh.tmpl` | Installs the launchd agent that powers the tmux update indicator |
 | `after_06` | `run_onchange_after_06-build-nvim-open-app.sh.tmpl` | Builds NvimOpen.app via `make build` (re-runs when AppleScript or plist helper changes) |
 | `after_07` | `run_onchange_after_07-setup-duti.sh.tmpl` | Applies file associations via `make install` (re-runs when `nvim-open.duti` changes) |
@@ -110,7 +107,6 @@ A few things macOS won't let scripts do silently:
 
 | What | Why | Where |
 |---|---|---|
-| Grant **AeroSpace** Accessibility | TCC requires a human toggle to allow window management | System Settings → Privacy & Security → Accessibility |
 | Set **system accent** to dawnfox pine | macOS won't let `defaults write` set a Custom Color hex; preset accents (Pink, Purple, etc.) all clash with the cream terminal palette | System Settings → Appearance → Accent → Custom Color → `#286983` |
 
 To preview what chezmoi would do without applying:
