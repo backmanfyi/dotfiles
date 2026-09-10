@@ -1,0 +1,11 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Applies the App Shortcuts in dot_config/window-shortcuts/shortcuts.ini
+# whenever that file or the applier script changes.
+# Rebuild triggers:
+# {{ include "dot_config/window-shortcuts/shortcuts.ini" | sha256sum }}
+# {{ include "scripts/window-shortcuts.sh" | sha256sum }}
+set -euo pipefail
+
+bash "{{ .chezmoi.sourceDir }}/scripts/window-shortcuts.sh"
+{{ end -}}
