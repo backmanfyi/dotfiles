@@ -5,6 +5,16 @@ Host callbackd 51.15.229.42
   IdentityFile ~/.config/ssh/scaleway.pub
   IdentitiesOnly yes
 
+# GitHub — personal account (backmanfyi). The 1Password agent also holds the
+# Stilta key and offers it first, which authenticates as the wrong account, so
+# this alias pins the personal key. Use it in remotes:
+#   git@github-personal:backmanfyi/<repo>.git
+Host github-personal
+  HostName github.com
+  User git
+  IdentityFile ~/.config/ssh/github.pub
+  IdentitiesOnly yes
+
 Host *
   IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
   ServerAliveInterval 60
