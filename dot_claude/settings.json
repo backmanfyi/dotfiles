@@ -175,7 +175,7 @@
       "**Protected IaC scopes**: `iac/cloudflare/`, `iac/netlify/`, `iac/callbackd/`, `iac/filedrop/`, `iac/forms/`, `iac/gha-runner/`, `iac/golink/`, `iac/grafana/`, `iac/instagram-cron/`, `iac/fastmail/` (OpenTofu workspaces) — IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production`",
       "### User-specific",
       "**Primary use of Claude Code**: software development — platform/infra engineering and full-stack TypeScript (Astro/React/Cloudflare Workers) across a personal/solo monorepo, plus security-consulting CRM and OSINT workflows",
-      "**Trusted repo**: /Users/larsbackman/Documents/Github/backmanfyi and its origin remote github.com:backmanfyi/backmanfyi.git — private, so confidential material (business docs, CVs, contracts) is fine to commit here; secrets are never cleared into it regardless of visibility",
+      "**Trusted repo**: ~/Documents/Github/backmanfyi and its origin remote github.com:backmanfyi/backmanfyi.git — private, so confidential material (business docs, CVs, contracts) is fine to commit here; secrets are never cleared into it regardless of visibility",
       "**Org-specific CLIs**: `op` (1Password CLI), `gh` (GitHub CLI), `tofu`/`make iac-*` (OpenTofu wrappers), `pnpm`/`turbo` (monorepo build), `wrangler` (Cloudflare Workers deploy), `podman` (containers — never `docker`, per user's personal CLAUDE.md)",
       "**Routine under this repo's `apps/<name>/` and `iac/<workspace>/` prefixes**: build/lint/test/dev commands via `pnpm --filter <app>` and `make -C iac/<workspace>` are routine dev-loop actions"
     ]
