@@ -5,6 +5,13 @@ Host callbackd 51.15.229.42
   IdentityFile ~/.config/ssh/scaleway.pub
   IdentitiesOnly yes
 
+# Scape GitHub key (1Password: Backman Security AB / Scape / GitHub); git routes scape-app/* here
+Host github-scape
+  HostName github.com
+  User git
+  IdentityFile ~/.config/ssh/scape_github.pub
+  IdentitiesOnly yes
+
 Host *
   IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
   ServerAliveInterval 60
