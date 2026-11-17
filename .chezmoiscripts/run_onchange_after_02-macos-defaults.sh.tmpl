@@ -34,6 +34,10 @@ defaults write com.apple.dock autohide-time-modifier -float 0.4
 defaults write com.apple.dock show-recents -bool false
 defaults write com.apple.dock mru-spaces -bool false
 
+# Mission Control — each display keeps its own Space, so fullscreening an app on
+# one display does not black out the others. Takes effect after logout.
+defaults write com.apple.spaces spans-displays -bool false
+
 # Screenshots
 defaults write com.apple.screencapture type -string "png"
 defaults write com.apple.screencapture disable-shadow -bool true
