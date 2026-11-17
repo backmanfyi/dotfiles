@@ -93,7 +93,7 @@ compinit-rebuild() {
   compinit -u -d "$ZSH_CACHE_DIR/.zcompdump"
   echo "Completions rebuilt"
 }
-complete -o nospace -C /opt/homebrew/bin/terraform terraform
+complete -o nospace -C /opt/homebrew/bin/tofu tofu
 complete -o nospace -C /opt/homebrew/bin/tofu tofu
 
 # Cache helper: regenerates only when the binary is newer than the cached output.
