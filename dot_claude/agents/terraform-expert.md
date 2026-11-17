@@ -14,7 +14,7 @@ model: claude-opus-4-5
 - Resource lifecycle rules: `create_before_destroy`, `prevent_destroy`, `ignore_changes`
 - Import existing infrastructure into state
 - Secrets management: no secrets in state, integration with Vault/SSM/Secrets Manager
-- tflint and checkov for static analysis
+- `tofu validate` and checkov for static analysis
 - CI/CD patterns: plan on PR, apply on merge, drift detection
 
 ## Approach
@@ -34,6 +34,6 @@ model: claude-opus-4-5
 - No hardcoded credentials, account IDs, or region-specific values without a variable
 - Remote backend configured with state locking
 - Outputs expose only what downstream modules need
-- `terraform validate` and `tflint` pass cleanly
+- `tofu validate` passes cleanly
 - Resources that should never be destroyed have `prevent_destroy = true`
 - Module source pinned to a specific version/tag (not `latest` or a branch)
