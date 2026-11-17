@@ -123,12 +123,61 @@
     ]
   },
   "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "shared-memory@memco": false
   },
+  "extraKnownMarketplaces": {
+    "memco": {
+      "source": {
+        "source": "github",
+        "repo": "memcoai/marketplace"
+      }
+    }
+  },
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "light-daltonized",
   "preferredNotifChannel": "terminal_bell",
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "tui": "fullscreen"
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Bash(gh issue list:*) in backmanfyi/backmanfyi",
+      "Bash(gh pr view:*) in backmanfyi/backmanfyi",
+      "Bash(git worktree remove:*) in this repo"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Bash(tofu apply:*) — not caught by the reminder hook per CLAUDE.md; treat as Protected-Scope IaC Apply",
+      "Bash(gh pr merge:*) — recurring worktree footgun noted in CLAUDE.md (main checked out in parent worktree); confirm target and worktree state first"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: backmanfyi (GitHub org github.com/backmanfyi) — solo/personal monorepo for backman.fyi and hastlykka.se, plus Backman Security AB consulting work",
+      "**Cloud provider(s)**: Cloudflare (DNS, R2 state storage, Workers), Netlify (hosting for backmanfyi/hastlykka), Scaleway (callbackd, filedrop VMs), 1Password (secrets)",
+      "**Repository visibility**: PRIVATE — backmanfyi/backmanfyi (confirmed via gh)",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: 1Password CLI (`op`) — vault `infrastructure` (ID `t2nn7t5p2nhq4ikegsitvhdz5y`); secrets fetched at runtime, never written to disk (no plaintext in `.env`, shell rc, or chezmoi templates); CI secrets referenced by name only: GITHUB_TOKEN, OP_SERVICE_ACCOUNT_TOKEN",
+      "**Default / protected branches**: `main` is the default branch and is protected (ruleset `default` active, per gh). NEVER push to `main`/`master` directly — work on `<type>/<short-description>` branches",
+      "**CI/CD deploy targets**: GitHub Actions (`.github/workflows/`) deploying to Netlify (backmanfyi, hastlykka), Cloudflare Workers (wrangler deploy), Scaleway (callbackd, filedrop); container image registry cgr.dev used in CI toolchain",
+      "**Network posture**: CI runners hardened via step-security/harden-runner with `egress-policy: block` and explicit allowlists per workflow",
+      "**Source control**: The trusted repo (backmanfyi/backmanfyi, private) and its origin remote (github.com:backmanfyi/backmanfyi.git) only — no additional orgs configured",
+      "**Trusted internal domains**: backman.fyi, hastlykka.se (this repo's own production domains)",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: 1Password vault `infrastructure`; Cloudflare R2 (OpenTofu state backend); Netlify (site hosting/build)",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: `docs/{cv,reports,contracts,invoices,sows,quotes}/` (business/consulting documents — CVs, contracts, invoices, SOWs, quotes); `.env`, `.env.local`, `.env.*.local`, `iac/**/.env.op`, `tools/**/.env.op`, `iac/*/backend.hcl`, `iac/*/terraform.tfvars` (gitignored, never committed); share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment; also treat backman.fyi and hastlykka.se live production deploys (Netlify, Cloudflare Workers, Scaleway VMs) as sensitive deploy targets per this repo's own CI/CD gating",
+      "**Protected deployment namespaces / environments**: production deploy targets for backmanfyi, hastlykka, callbackd, filedrop, threat-intel (gated behind `push to main` + CI in this repo) — plus the general `prod`/`production` heuristic",
+      "**Protected IaC scopes**: `iac/cloudflare/`, `iac/netlify/`, `iac/callbackd/`, `iac/filedrop/`, `iac/forms/`, `iac/gha-runner/`, `iac/golink/`, `iac/grafana/`, `iac/instagram-cron/`, `iac/fastmail/` (OpenTofu workspaces) — IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production`",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development — platform/infra engineering and full-stack TypeScript (Astro/React/Cloudflare Workers) across a personal/solo monorepo, plus security-consulting CRM and OSINT workflows",
+      "**Trusted repo**: /Users/larsbackman/Documents/Github/backmanfyi and its origin remote github.com:backmanfyi/backmanfyi.git — private, so confidential material (business docs, CVs, contracts) is fine to commit here; secrets are never cleared into it regardless of visibility",
+      "**Org-specific CLIs**: `op` (1Password CLI), `gh` (GitHub CLI), `tofu`/`make iac-*` (OpenTofu wrappers), `pnpm`/`turbo` (monorepo build), `wrangler` (Cloudflare Workers deploy), `podman` (containers — never `docker`, per user's personal CLAUDE.md)",
+      "**Routine under this repo's `apps/<name>/` and `iac/<workspace>/` prefixes**: build/lint/test/dev commands via `pnpm --filter <app>` and `make -C iac/<workspace>` are routine dev-loop actions"
+    ]
+  }
 }
