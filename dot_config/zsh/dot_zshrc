@@ -154,5 +154,12 @@ _op_register_wrappers() {
 _op_register_wrappers
 unset -f _op_register_wrappers
 
+# gh: use the Scape account under ~/Documents/work/scape, backmanfyi everywhere else.
+gh() {
+  local user=backmanfyi
+  [[ $PWD == $HOME/Documents/work/scape* ]] && user=larsbackman-scape
+  GH_TOKEN=$(command gh auth token --user $user 2>/dev/null) command gh "$@"
+}
+
 # zsh-syntax-highlighting must be sourced last
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

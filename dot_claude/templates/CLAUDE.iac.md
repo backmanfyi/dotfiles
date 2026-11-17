@@ -36,7 +36,7 @@ terraform apply tfplan
 
 ### Adding a new resource
 1. Check if a module exists in `modules/` before writing inline resources
-2. Run `tflint` before committing
+2. Run `tofu validate` before committing
 3. PR required for staging and prod — no direct applies
 
 ### Sensitive values
@@ -45,7 +45,7 @@ terraform apply tfplan
 - Use `data "aws_ssm_parameter"` to fetch at apply time
 
 ## Permissions
-- Auto-allow: `terraform plan`, `tflint`, read-only AWS CLI commands (`aws ec2 describe-*`, `aws s3 ls`, etc.)
+- Auto-allow: `tofu plan`, `tofu validate`, read-only AWS CLI commands (`aws ec2 describe-*`, `aws s3 ls`, etc.)
 - Ask before: `terraform apply`, any destructive AWS CLI operation
 - Never: direct AWS console changes to managed resources
 
