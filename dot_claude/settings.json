@@ -84,7 +84,8 @@
       "mcp__notion__notion-get-teams",
       "mcp__notion__notion-get-users",
       "mcp__notion__notion-query-data-sources",
-      "mcp__notion__notion-query-meeting-notes"
+      "mcp__notion__notion-query-meeting-notes",
+      "Bash(kubectl get:*)"
     ],
     "defaultMode": "auto"
   },
@@ -107,6 +108,16 @@
             "type": "command",
             "command": "sh ~/.claude/hooks/block-push-to-protected.sh",
             "statusMessage": "Checking branch protection..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh ~/.claude/hooks/block-docker.sh",
+            "statusMessage": "Checking container tooling..."
           }
         ]
       },
