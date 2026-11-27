@@ -218,16 +218,16 @@ make clean  # remove ~/Applications/NvimOpen.app
 
 Rectangle-style window tiling with no window manager installed: macOS 15+ ships window tiling in **Window > Move & Resize**, and every item there is a normal menu command, so it can be bound with an App Shortcut.
 
-`dot_config/window-shortcuts/shortcuts.ini` is the source of truth. Each section is a preferences domain (`NSGlobalDomain` is System Settings' "All Applications"), each key a menu item title, each value a shortcut spec:
+`dot_config/window-shortcuts/shortcuts.ini` is the source of truth. Each section is a preferences domain (`NSGlobalDomain` is System Settings' "All Applications"), each key a menu item, each value a shortcut spec. Write a key as a full menu path joined with ` > `; the Move & Resize items only bind by full path:
 
 ```ini
 [NSGlobalDomain]
-Left  = ctrl+alt+left
-Right = ctrl+alt+right
-Fill  = ctrl+alt+return
+Window > Move & Resize > Left  = ctrl+alt+left
+Window > Move & Resize > Right = ctrl+alt+right
+Window > Move & Resize > Fill  = ctrl+alt+return
 ```
 
-`scripts/window-shortcuts.sh` translates those into the `NSUserKeyEquivalents` encoding (`^` control, `~` option, `$` shift, `@` command, plus a `\Uxxxx` escape for named keys) and writes one dictionary per domain. Each domain is written wholesale, so removing a line removes the binding on the next apply, and a domain dropped from the file is cleaned up via the state file at `~/.local/state/window-shortcuts/managed-domains`.
+`scripts/window-shortcuts.sh` translates those into the `NSUserKeyEquivalents` encoding (`^` control, `~` option, `$` shift, `@` command, plus a `\Uxxxx` escape for named keys), turns each menu path into the ESC-separated key macOS stores, and writes one dictionary per domain. Each domain is written wholesale, so removing a line removes the binding on the next apply, and a domain dropped from the file is cleaned up via the state file at `~/.local/state/window-shortcuts/managed-domains`.
 
 The defaults mirror Rectangle's recommended set: halves on `ctrl+alt+arrow`, quarters on `U`/`I`/`J`/`K`, `Fill` on `ctrl+alt+return`, `Center` on `ctrl+alt+c`, `Return to Previous Size` on `ctrl+alt+delete`. Rectangle's thirds, resize and move-to-display actions have no macOS menu equivalent and are not covered.
 

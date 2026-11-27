@@ -126,6 +126,26 @@ encode_shortcut() {
   printf '%s%s%s%s%s' "$ctrl" "$alt" "$sft" "$cmd" "$char"
 }
 
+# "Window > Move & Resize > Left" -> "\033Window\033Move & Resize\033Left".
+# macOS stores a full menu path as ESC-prefixed segments. Bare titles bind
+# unreliably: the Move & Resize items only bind by full path. A title without
+# " > " is passed through unchanged.
+menu_key() {
+  local rest="$1" out="" seg
+  case "$rest" in
+    *' > '*) ;;
+    *) printf '%s' "$rest"; return 0 ;;
+  esac
+  while [ -n "$rest" ]; do
+    case "$rest" in
+      *' > '*) seg="${rest%%' > '*}"; rest="${rest#*' > '}" ;;
+      *)       seg="$rest"; rest="" ;;
+    esac
+    out="$out"$'\033'"$(trim "$seg")"
+  done
+  printf '%s' "$out"
+}
+
 domain=""
 pairs=()
 applied_domains=""
@@ -184,6 +204,8 @@ while IFS= read -r line || [ -n "$line" ]; do
     errors=1
     continue
   fi
+
+  title="$(menu_key "$title")"
 
   if ! value="$(encode_shortcut "$spec")"; then
     errors=1
